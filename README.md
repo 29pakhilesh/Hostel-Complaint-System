@@ -10,6 +10,7 @@ A professional, secure, and feature-rich complaint management system built with 
 - 🖼️ **Image Attachments**: Up to 3 images can be uploaded with each complaint
 - 📍 **Location Details**: Hostel, optional block (for specific hostels), and room number stored with each complaint
 - 🔁 **3‑Step Workflow**: `pending → inprogress → resolved` status flow with detail view per complaint
+- 🆔 **Complaint Tracking**: Students receive a Complaint ID and can track status on a dedicated tracking page
 - 🎨 **Modern Dark & Light UI**: Theme toggle with professional slate/sky palette and subtle background effects
 - 🔒 **Security**: Password hashing with bcrypt, protected routes, input validation
 - 📊 **Admin Dashboard**: Super admin overview with filters and password management tools
@@ -169,6 +170,9 @@ All endpoints are prefixed with `/api`.
 - `PUT /api/complaints/:id` (department + super admin)  
   Update complaint status. Body: `{ "status": "pending" | "inprogress" | "resolved" }`.
 
+- `GET /api/complaints/public/:id` (public)  
+  Read‑only details of a single complaint by ID, used by the public tracking page.
+
 ### Categories
 
 - `GET /api/categories` (public)  
@@ -207,6 +211,8 @@ hostel-complaint-system/
 │   │   │   └── ThemeContext.jsx  # Dark/light mode context
 │   │   ├── pages/
 │   │   │   ├── PublicComplaint.jsx      # Public complaint submission form
+│   │   │   ├── ComplaintConfirmation.jsx# Confirmation view after submitting
+│   │   │   ├── TrackComplaint.jsx       # Public tracking page by Complaint ID
 │   │   │   ├── DepartmentLogin.jsx      # Department login page
 │   │   │   ├── DepartmentDashboard.jsx  # Department dashboard (per category)
 │   │   │   ├── ComplaintDetail.jsx      # Detailed view of a single complaint
