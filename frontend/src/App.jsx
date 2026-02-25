@@ -4,6 +4,8 @@ import PublicComplaint from './pages/PublicComplaint';
 import DepartmentLogin from './pages/DepartmentLogin';
 import DepartmentDashboard from './pages/DepartmentDashboard';
 import ComplaintDetail from './pages/ComplaintDetail';
+import ComplaintConfirmation from './pages/ComplaintConfirmation';
+import TrackComplaint from './pages/TrackComplaint';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -18,6 +20,10 @@ function App() {
         <Routes>
           {/* Public complaint submission page */}
           <Route path="/" element={<PublicComplaint />} />
+
+          {/* Complaint confirmation and tracking */}
+          <Route path="/complaints/confirmation/:id" element={<ComplaintConfirmation />} />
+          <Route path="/track" element={<TrackComplaint />} />
           
           {/* Super admin / legacy login */}
           <Route path="/login/admin" element={<Login />} />
