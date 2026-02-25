@@ -13,6 +13,9 @@ const ComplaintDetail = () => {
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [translating, setTranslating] = useState(false);
+  const [translated, setTranslated] = useState('');
+  const [showHindi, setShowHindi] = useState(false);
 
   useEffect(() => {
     const fetchComplaint = async () => {
@@ -45,7 +48,7 @@ const ComplaintDetail = () => {
     }
   };
 
-  const bgClass = isDark ? 'bg-black' : 'bg-slate-50';
+  const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
   const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
   const mutedClass = isDark ? 'text-zinc-400' : 'text-slate-600';
@@ -88,6 +91,24 @@ const ComplaintDetail = () => {
   };
 
   const images = Array.isArray(complaint?.image_paths) ? complaint.image_paths : [];
+
+  const handleTranslate = async () => {
+    if (!complaint?.description || translating) return;
+    setTranslating(true);
+    try {
+      const res = await api.post('/translate', {
+        text: complaint.description,
+        source: 'en',
+        target: 'hi',
+      });
+      setTranslated(res.data?.translatedText || '');
+      setShowHindi(true);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to translate description');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   return (
     <div className={`relative min-h-screen ${bgClass} py-8 px-4 sm:px-6 lg:px-8`}>
@@ -220,10 +241,31 @@ const ComplaintDetail = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <h2 className={`text-sm font-semibold ${textClass}`}>Description</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className={`text-sm font-semibold ${textClass}`}>Description</h2>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={translating}
+                      onClick={handleTranslate}
+                      className="rounded-full border border-sky-500 px-3 py-1 text-xs font-medium text-sky-300 hover:bg-sky-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {translating ? 'Translating…' : 'Translate to Hindi'}
+                    </button>
+                    {translated && (
+                      <button
+                        type="button"
+                        onClick={() => setShowHindi((v) => !v)}
+                        className="rounded-full border border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-300 hover:bg-zinc-800"
+                      >
+                        {showHindi ? 'Show English' : 'Show Hindi'}
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <p className={`text-sm leading-relaxed ${mutedClass}`}>
-                  {complaint.description}
+                  {showHindi && translated ? translated : complaint.description}
                 </p>
               </div>
             </div>
