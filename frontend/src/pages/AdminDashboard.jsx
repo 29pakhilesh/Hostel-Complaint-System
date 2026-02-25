@@ -97,6 +97,9 @@ const AdminDashboard = () => {
     if (status === 'inprogress') {
       return `${baseClasses} bg-sky-500/10 text-sky-300 border border-sky-500/80`;
     }
+    if (status === 'rejected') {
+      return `${baseClasses} bg-red-500/10 text-red-300 border border-red-500/80`;
+    }
     return `${baseClasses} bg-amber-500/10 text-amber-300 border border-amber-500/80`;
   };
 
@@ -105,6 +108,7 @@ const AdminDashboard = () => {
     pending: complaints.filter(c => c.status === 'pending').length,
     inprogress: complaints.filter(c => c.status === 'inprogress').length,
     resolved: complaints.filter(c => c.status === 'resolved').length,
+    rejected: complaints.filter(c => c.status === 'rejected').length,
   };
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
@@ -141,7 +145,7 @@ const AdminDashboard = () => {
         <div className="mb-8">
           <h2 className={`text-2xl font-bold mb-6 ${textMain}`}>Complaints Overview</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-6">
             <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
               <div className={`${textMuted} text-sm font-medium mb-2`}>Total Complaints</div>
               <div className={`text-3xl font-bold ${textMain}`}>{stats.total}</div>
@@ -157,6 +161,10 @@ const AdminDashboard = () => {
             <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
               <div className={`${textMuted} text-sm font-medium mb-2`}>Resolved</div>
               <div className="text-3xl font-bold text-emerald-400">{stats.resolved}</div>
+            </div>
+            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
+              <div className={`${textMuted} text-sm font-medium mb-2`}>Rejected</div>
+              <div className="text-3xl font-bold text-red-400">{stats.rejected}</div>
             </div>
           </div>
 
@@ -303,10 +311,14 @@ const AdminDashboard = () => {
                 </thead>
                 <tbody className={isDark ? 'divide-y divide-slate-800/80' : 'divide-y divide-slate-200'}>
                   {complaints.map((complaint) => (
-                    <tr key={complaint.id} className={isDark ? 'hover:bg-slate-900/60 transition-colors' : 'hover:bg-slate-50 transition-colors'}>
+                    <tr
+                      key={complaint.id}
+                      className={`${isDark ? 'hover:bg-slate-900/60' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
+                      onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
+                    >
                       <td className="px-6 py-4">
                         <div className={`text-sm font-medium ${textMain}`}>{complaint.title}</div>
-                        <div className={`text-sm mt-1 ${textMuted}`}>{complaint.description}</div>
+                        <div className={`text-sm mt-1 ${textMuted} line-clamp-2`}>{complaint.description}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm ${textMuted}`}>{complaint.category_name}</span>
@@ -323,11 +335,17 @@ const AdminDashboard = () => {
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMuted}`}>
                         {formatDate(complaint.created_at)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
+                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+                        >
+                          View details
+                        </button>
                         <button
                           onClick={() => handleStatusToggle(complaint.id, complaint.status)}
                           disabled={updatingId === complaint.id}
-                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                          className={`ml-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
                             complaint.status === 'pending'
                               ? 'bg-green-600 hover:bg-green-700 text-white'
                               : 'bg-yellow-600 hover:bg-yellow-700 text-white'
@@ -336,8 +354,10 @@ const AdminDashboard = () => {
                           {updatingId === complaint.id
                             ? 'Updating...'
                             : complaint.status === 'pending'
-                            ? 'Mark Resolved'
-                            : 'Mark Pending'}
+                            ? 'Mark in progress'
+                            : complaint.status === 'inprogress'
+                            ? 'Mark resolved'
+                            : 'Mark pending'}
                         </button>
                       </td>
                     </tr>
