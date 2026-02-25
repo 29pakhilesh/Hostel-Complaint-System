@@ -329,9 +329,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!status || !['pending', 'inprogress', 'resolved'].includes(status)) {
-    return res.status(400).json({ 
-      error: 'Valid status (pending, inprogress or resolved) is required' 
+  const allowedStatuses = ['pending', 'inprogress', 'resolved', 'rejected'];
+  if (!status || !allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      error: 'Valid status (pending, inprogress, resolved or rejected) is required',
     });
   }
 
@@ -372,6 +373,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(complaint);
   } catch (error) {
     console.error('Update complaint error:', error);
+    const code = error.code || error.constraint;
+    if (code === '22P02' || (error.message && error.message.includes('invalid input value for enum'))) {
+      return res.status(400).json({
+        error: "Database does not support 'rejected' status yet. Run migration: node migrations/migrate-v6.js",
+      });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });
