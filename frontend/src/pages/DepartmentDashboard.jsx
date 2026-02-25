@@ -54,6 +54,16 @@ const DepartmentDashboard = () => {
         ? `${baseClasses} bg-neon-yellow/20 text-neon-yellow border-2 border-neon-yellow`
         : `${baseClasses} bg-yellow-100 text-yellow-800 border-2 border-yellow-500`;
     }
+    if (status === 'inprogress') {
+      return isDark
+        ? `${baseClasses} bg-sky-500/10 text-sky-300 border border-sky-500/80`
+        : `${baseClasses} bg-sky-100 text-sky-800 border border-sky-500`;
+    }
+    if (status === 'rejected') {
+      return isDark
+        ? `${baseClasses} bg-red-500/10 text-red-300 border border-red-500/80`
+        : `${baseClasses} bg-red-100 text-red-800 border border-red-500`;
+    }
     return isDark
       ? `${baseClasses} bg-neon-yellow/10 text-neon-yellow border-2 border-neon-yellow/50`
       : `${baseClasses} bg-yellow-50 text-yellow-700 border-2 border-yellow-400`;
