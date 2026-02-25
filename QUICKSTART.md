@@ -30,12 +30,16 @@ npm install
 cp .env.example .env
 # Edit .env with your PostgreSQL credentials
 
-# Run database migration
-npm run migrate
+# Run database migrations (base + feature extensions)
+npm run migrate      # base schema, categories, default super_admin
+npm run migrate-v2   # add department role + per-category department users
+npm run migrate-v3   # add hostel/block/room + image_paths to complaints
+npm run migrate-v4   # add inprogress status
+npm run migrate-v5   # add short tracking_code for complaints
 
 # Start backend server
 npm start
-# Backend runs on http://localhost:5000
+# Backend runs on http://localhost:5002
 ```
 
 ### 3. Frontend Setup
@@ -50,19 +54,30 @@ npm install
 
 # Start development server
 npm run dev
-# Frontend runs on http://localhost:3000
+# Frontend runs on http://localhost:5173 (proxied to backend on 5002)
 ```
 
 ### 4. Access the Application
 
-1. Open your browser and go to `http://localhost:3000`
-2. Login with default admin credentials:
-   - **Email**: `admin@hostel.com`
-   - **Password**: `admin123`
+1. Open your browser and go to `http://localhost:5173`
+2. **Public complaints (students)**:
+   - Students do **not** need accounts.
+   - They submit complaints directly from the home page `/`.
+3. **Department login**:
+   - URL: `/login/department`
+   - Default department users are created by `migrate-v2` with emails like:
+     - `internet@hostel.com`, `plumbing@hostel.com`, etc.
+   - Default password for all departments: `dept123`
+4. **Super admin login**:
+   - URL: `/login/admin`
+   - Default credentials:
+     - **Email**: `admin@hostel.com`
+     - **Password**: `admin123`
 
 ## Creating Test Users
 
-To create additional users, use the helper script:
+You normally do **not** need student accounts (students use the public form).  
+If you still want extra users (e.g., additional department or admin accounts), you can use the helper script:
 
 ```bash
 cd backend
@@ -94,8 +109,8 @@ node scripts/create-user.js warden@hostel.com warden123 "Jane Warden" warden
 ## Next Steps
 
 - Read the full [README.md](./README.md) for detailed documentation
-- Explore the API endpoints
+- Explore the API endpoints (public complaint submission, tracking, department/admin tools)
 - Customize the UI colors and styling
-- Add more categories or features
+- Add more categories, departments, or features
 
 Happy coding! 🚀
