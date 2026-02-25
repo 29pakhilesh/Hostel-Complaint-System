@@ -18,15 +18,23 @@ All files have been successfully created and saved to your workspace.
 
 ### Server & Routes
 - `server.js` - Express server entry point
-- `routes/auth.js` - Authentication endpoints (login)
-- `routes/complaints.js` - Complaint CRUD endpoints
-- `routes/categories.js` - Category endpoints
+- `routes/auth.js` - Authentication endpoints (login, super admin tools)
+- `routes/complaints.js` - Complaint endpoints (public submission, department/super admin views, tracking)
+- `routes/categories.js` - Category endpoints (public)
+- `routes/translate.js` - English→Hindi translation endpoint for department users
 
 ### Middleware
 - `middleware/auth.js` - JWT authentication & role-based middleware
 
 ### Database
-- `migrations/migrate.js` - Database schema migration script
+- `migrations/migrate.js` - Base schema migration (users, categories, complaints)
+- `migrations/migrate-v2.js` - Add `department` role and per-category department users
+- `migrations/migrate-v3.js` - Add hostel/block/room and image paths to complaints
+- `migrations/migrate-v4.js` - Add `inprogress` complaint status
+- `migrations/migrate-v5.js` - Add short `tracking_code` for public complaint tracking
+
+### Other
+- `uploads/` - Stored complaint image files created at runtime
 
 ### Scripts
 - `scripts/create-user.js` - Helper script to create new users
@@ -51,17 +59,22 @@ All files have been successfully created and saved to your workspace.
 #### Components (`/frontend/src/components/`)
 - `ProtectedRoute.jsx` - Route protection component
 - `RoleBasedRoute.jsx` - Role-based route access control
+- `ThemeToggle.jsx` - Dark/light mode toggle
+- `SnowfallOverlay.jsx` - Background visual effect component
 
 #### Pages (`/frontend/src/pages/`)
-- `Login.jsx` - Login page component
-- `StudentDashboard.jsx` - Student dashboard with complaint form
-- `AdminDashboard.jsx` - Admin dashboard with overview and management
+- `PublicComplaint.jsx` - Public complaint submission form (no student login required)
+- `DepartmentLogin.jsx` - Department login page
+- `DepartmentDashboard.jsx` - Department dashboard for viewing/handling assigned complaints
+- `ComplaintDetail.jsx` - Detailed view of a single complaint (with status controls and images)
+- `TrackComplaint.jsx` - Public tracking page using short Complaint ID
+- `ComplaintConfirmation.jsx` - Confirmation view after a complaint is registered (with PDF print layout)
+- `Login.jsx` - Super admin login page
+- `AdminDashboard.jsx` - Super admin dashboard with stats, filters, and password tools
 
 #### Utilities (`/frontend/src/utils/`)
 - `api.js` - Axios configuration with interceptors
 - `auth.js` - Authentication helper functions
-
-## Total Files Created: 28 files
 
 ## Next Steps
 
