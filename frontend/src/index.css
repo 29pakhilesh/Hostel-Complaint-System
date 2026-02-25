@@ -52,3 +52,145 @@ body:not(.dark) {
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Print: always white background, full A4 single page */
+@media print {
+  html,
+  body,
+  body.dark,
+  #root,
+  #root > * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Landscape A4: 297mm x 210mm, margin 10mm → usable 277mm x 190mm */
+  .print-status-page {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    min-height: 0 !important;
+    width: 277mm !important;
+    height: 190mm !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .print-status-page-inner {
+    width: 100% !important;
+    height: 190mm !important;
+    max-width: none !important;
+    box-sizing: border-box;
+    padding: 6mm !important;
+    background: #ffffff !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .print-status-page-inner .print-status-content {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 4mm !important;
+  }
+  /* Two-column layout in print to fill landscape */
+  .print-status-page-inner .print-status-content .print-status-body {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6mm !important;
+    align-content: start !important;
+  }
+  .print-status-body .print-col-left {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2mm !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-status-body .print-col-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2mm !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  /* Compact print so everything fits one landscape page */
+  .print-status-content .print-status-body {
+    font-size: 10px !important;
+  }
+  .print-status-content .print-status-body section {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-status-content .print-status-body img {
+    max-height: 40mm !important;
+    object-fit: contain !important;
+  }
+  .print-status-content,
+  .print-status-content * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-status-content {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  .print-status-content [class*="bg-dark-black"],
+  .print-status-content .bg-dark-black-800,
+  .print-status-content .bg-dark-black-900,
+  .print-status-content .bg-slate-950,
+  .print-status-content .bg-slate-50 {
+    background: #ffffff !important;
+  }
+  .print-status-content .text-zinc-100,
+  .print-status-content .text-slate-100 {
+    color: #111827 !important;
+  }
+  .print-status-content .text-zinc-400,
+  .print-status-content .text-slate-400 {
+    color: #4b5563 !important;
+  }
+  .print-status-content .border-slate-700,
+  .print-status-content .border-dark-black-700,
+  .print-status-content .border-zinc-700 {
+    border-color: #d1d5db !important;
+  }
+  .print-status-content .bg-emerald-500\/20 {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+  }
+  .print-status-content .text-emerald-500 {
+    color: #059669 !important;
+  }
+  .print-status-content .border-emerald-500 {
+    border-color: #059669 !important;
+  }
+  .print-status-content .bg-sky-500\/10,
+  .print-status-content .bg-emerald-500\/10 {
+    background-color: rgba(14, 165, 233, 0.08) !important;
+  }
+  .print-status-content .border-sky-500 {
+    border-color: #0ea5e9 !important;
+  }
+  .print-status-content .text-sky-300,
+  .print-status-content .text-emerald-300 {
+    color: #0d9488 !important;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}
+
