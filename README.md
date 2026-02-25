@@ -261,6 +261,29 @@ cd frontend
 npm run dev    # Vite dev server with HMR on http://localhost:5173
 ```
 
+### Using the Makefile (optional but recommended)
+
+From the project root you can use the `Makefile` shortcuts:
+
+```bash
+# Install backend and frontend dependencies
+make install
+
+# Run all database migrations (base + v2 + v3)
+make migrate-db
+
+# Start backend (port 5002) and frontend (Vite) in separate terminals
+make backend
+make frontend
+
+# Or just get a reminder of what to run
+make dev
+
+# Stop backend or frontend dev servers if they are stuck
+make stop-backend
+make stop-frontend
+```
+
 ## Production Build
 
 ### Frontend
