@@ -1,12 +1,16 @@
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocation } from 'react-router-dom';
 
 const ThemeToggle = () => {
   const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/login/admin') || location.pathname.startsWith('/dashboard/admin');
+  if (isAdminRoute) return null;
 
   return (
     <button
       onClick={toggleTheme}
-      className="fixed top-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-slate-500/60 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 backdrop-blur-sm hover:border-sky-400 hover:text-sky-200 hover:bg-slate-900 transition-all duration-200"
+      className="fixed top-4 right-4 z-50 print:hidden inline-flex items-center gap-2 rounded-full border border-slate-500/60 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-100 backdrop-blur-sm hover:border-sky-400 hover:text-sky-200 hover:bg-slate-900 transition-all duration-200"
       aria-label="Toggle theme"
     >
       <span className="hidden sm:inline">{isDark ? 'Dark mode' : 'Light mode'}</span>
