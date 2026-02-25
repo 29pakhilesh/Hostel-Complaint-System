@@ -59,22 +59,20 @@ const DepartmentLogin = () => {
       <SnowfallOverlay />
       <div className="relative w-full max-w-md animate-fade-in-up">
         <div className={`${cardBgClass} rounded-2xl p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500`} style={shadowStyle}>
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-3">
               <img
                 src={JUIT_LOGO_SRC}
                 alt="JUIT logo"
-                className="h-10 w-10 object-contain"
+                className="h-12 w-12 object-contain"
               />
-              <div className="text-left">
-                <h1
-                  className={`text-2xl font-semibold ${headingClass} transition-colors duration-300`}
-                >
-                  Department Login
-                </h1>
-                <p className={`${textMutedClass} text-xs sm:text-sm`}>Jaypee University of Information Technology</p>
-              </div>
             </div>
+            <h1
+              className={`text-2xl font-semibold ${headingClass} transition-colors duration-300`}
+            >
+              Department Login
+            </h1>
+            <p className={`${textMutedClass} text-sm mt-1`}>Jaypee University of Information Technology</p>
           </div>
 
           {error && (
