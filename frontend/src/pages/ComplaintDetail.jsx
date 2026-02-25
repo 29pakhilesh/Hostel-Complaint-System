@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
@@ -7,6 +7,8 @@ import SnowfallOverlay from '../components/SnowfallOverlay';
 const ComplaintDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminView = location.pathname.startsWith('/dashboard/admin');
   const { isDark } = useTheme();
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +69,10 @@ const ComplaintDetail = () => {
         classes = isDark
           ? 'bg-sky-500/10 border-sky-400 text-sky-300'
           : 'bg-sky-100 border-sky-500 text-sky-800';
+      } else if (value === 'rejected') {
+        classes = isDark
+          ? 'bg-red-500/10 border-red-400 text-red-300'
+          : 'bg-red-100 border-red-500 text-red-800';
       } else {
         classes = isDark
           ? 'bg-emerald-500/10 border-emerald-400 text-emerald-300'
@@ -117,11 +123,11 @@ const ComplaintDetail = () => {
         <div className="mb-6 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => (isAdminView ? navigate('/dashboard/admin') : navigate(-1))}
             className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
             <span className="text-lg">←</span>
-            <span>Back to dashboard</span>
+            <span>{isAdminView ? 'Back to Admin dashboard' : 'Back to dashboard'}</span>
           </button>
         </div>
 
@@ -238,6 +244,7 @@ const ComplaintDetail = () => {
                   {renderStatusButton('pending', 'Pending')}
                   {renderStatusButton('inprogress', 'In progress')}
                   {renderStatusButton('resolved', 'Resolved')}
+                  {renderStatusButton('rejected', 'Reject')}
                 </div>
               </div>
 
