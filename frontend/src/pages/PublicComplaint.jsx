@@ -24,6 +24,7 @@ const PublicComplaint = () => {
   const [images, setImages] = useState([]);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [lastComplaintId, setLastComplaintId] = useState('');
+  const [trackId, setTrackId] = useState('');
 
   const HOSTELS = [
     'Azad Bhawan',
@@ -177,92 +178,101 @@ const PublicComplaint = () => {
   };
 
   return (
-    <div className={`relative min-h-screen ${bgClass} py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-500`}>
+    <div className={`relative min-h-screen flex items-center ${bgClass} py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-500`}>
       <SnowfallOverlay />
-      <div className="relative max-w-6xl mx-auto grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start animate-fade-in-up-slow">
-        {/* Left: hero / information */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4">
+      <div className="relative w-full max-w-6xl mx-auto grid gap-6 lg:grid-cols-[1fr_1fr] items-stretch animate-fade-in-up-slow">
+        {/* Left tile: hero + steps + track */}
+        <div className={`${cardBgClass} rounded-2xl border ${borderClass} p-6 sm:p-8 flex flex-col justify-center shadow-xl`}>
+          <div className="flex items-center gap-3 mb-6">
             <img
               src={JUIT_LOGO_SRC}
               alt="JUIT logo"
-              className="h-14 w-14 object-contain"
+              className="h-12 w-12 object-contain flex-shrink-0"
             />
             <div>
-              <h1
-                className={`text-3xl sm:text-4xl font-semibold tracking-tight ${headingClass}`}
-              >
+              <h1 className={`text-2xl sm:text-3xl font-semibold tracking-tight ${headingClass}`}>
                 JUIT Hostel Complaint Portal
               </h1>
-              <p className={`${textMutedClass} mt-2 text-sm sm:text-base max-w-xl`}>
+              <p className={`${textMutedClass} mt-1 text-sm`}>
                 Submit your hostel issues directly to the responsible department and track
                 the status of your complaint using your unique Complaint ID.
               </p>
             </div>
           </div>
 
-          <div className={`grid gap-4 sm:grid-cols-3`}>
+          <div className={`grid gap-3 sm:grid-cols-3`}>
             <div className={`${cardBgClass} border ${borderClass} rounded-xl p-4`}>
-              <p className={`text-xs font-semibold uppercase tracking-wide ${textMutedClass}`}>
-                Step 1
-              </p>
-              <p className={`${textClass} mt-1 font-medium`}>Describe your problem</p>
-              <p className={`${textMutedClass} mt-1 text-sm`}>
-                Select the correct department, hostel, and room so it reaches the right team.
+              <p className={`text-[10px] font-semibold uppercase tracking-wide ${textMutedClass}`}>Step 1</p>
+              <p className={`${textClass} mt-1 text-sm font-medium`}>Describe your problem</p>
+              <p className={`${textMutedClass} mt-1 text-xs`}>
+                Select department, hostel, and room so it reaches the right team.
               </p>
             </div>
             <div className={`${cardBgClass} border ${borderClass} rounded-xl p-4`}>
-              <p className={`text-xs font-semibold uppercase tracking-wide ${textMutedClass}`}>
-                Step 2
-              </p>
-              <p className={`${textClass} mt-1 font-medium`}>Upload supporting images</p>
-              <p className={`${textMutedClass} mt-1 text-sm`}>
-                Attach up to three clear photos to help the department understand the issue.
+              <p className={`text-[10px] font-semibold uppercase tracking-wide ${textMutedClass}`}>Step 2</p>
+              <p className={`${textClass} mt-1 text-sm font-medium`}>Upload images</p>
+              <p className={`${textMutedClass} mt-1 text-xs`}>
+                Attach up to three clear photos to help the department.
               </p>
             </div>
             <div className={`${cardBgClass} border ${borderClass} rounded-xl p-4`}>
-              <p className={`text-xs font-semibold uppercase tracking-wide ${textMutedClass}`}>
-                Step 3
-              </p>
-              <p className={`${textClass} mt-1 font-medium`}>Track your Complaint ID</p>
-              <p className={`${textMutedClass} mt-1 text-sm`}>
-                Use the generated Complaint ID on the tracking page to see live status updates.
+              <p className={`text-[10px] font-semibold uppercase tracking-wide ${textMutedClass}`}>Step 3</p>
+              <p className={`${textClass} mt-1 text-sm font-medium`}>Track your ID</p>
+              <p className={`${textMutedClass} mt-1 text-xs`}>
+                Use the Complaint ID on the tracking page for live status.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/track"
-              className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium ${
-                isDark
-                  ? 'bg-slate-800 text-slate-100 hover:bg-slate-700'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
-              } transition-colors`}
-            >
+          <div className="mt-6 space-y-3">
+            <p className={`text-xs font-semibold uppercase tracking-wide ${textMutedClass}`}>
               Track an existing complaint
-            </Link>
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const id = trackId.trim();
+                if (id) navigate(`/track?id=${encodeURIComponent(id)}`);
+              }}
+              className="flex flex-wrap items-center gap-2"
+            >
+              <input
+                type="text"
+                value={trackId}
+                onChange={(e) => setTrackId(e.target.value)}
+                placeholder="Enter Complaint ID"
+                className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg text-sm ${inputBgClass} border ${inputBorderClass} ${inputTextClass} ${placeholderClass} focus:outline-none focus:ring-2 focus:ring-sky-500`}
+              />
+              <button
+                type="submit"
+                disabled={!trackId.trim()}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  isDark ? 'bg-sky-500 text-white hover:bg-sky-400' : 'bg-slate-900 text-white hover:bg-slate-800'
+                } disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+              >
+                View status
+              </button>
+            </form>
             {lastComplaintId && (
               <p className={`${textMutedClass} text-xs sm:text-sm`}>
-                Last Complaint ID:&nbsp;
-                <span className={`${textClass} font-mono break-all`}>{lastComplaintId}</span>
+                Last submitted ID: <span className={`${textClass} font-mono`}>{lastComplaintId}</span>
               </p>
             )}
           </div>
         </div>
 
-        {/* Right: main complaint form */}
+        {/* Right tile: complaint form */}
         <div
-          className={`${cardBgClass} rounded-2xl p-6 sm:p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500`}
+          className={`${cardBgClass} rounded-2xl p-6 sm:p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500 flex flex-col justify-center`}
           style={shadowStyle}
         >
           {formErrors.submit && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border-2 border-red-500 rounded-lg text-red-600 dark:text-red-400 transition-colors duration-300">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border-2 border-red-500 rounded-lg text-red-600 dark:text-red-400 text-sm transition-colors duration-300">
               {formErrors.submit}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label className={`block text-sm font-medium ${textClass} mb-2 transition-colors duration-300`}>
                 Title <span className={isDark ? 'text-sky-400' : 'text-rose-500'}>*</span>
@@ -500,20 +510,21 @@ const PublicComplaint = () => {
             </button>
           </form>
 
-          <div className="mt-6 text-center flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-zinc-700 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 text-center">
             <Link
               to="/login/department"
-              className={`text-sm ${isDark ? 'text-sky-400 hover:text-sky-300' : 'text-slate-700 hover:text-slate-900'} transition-colors`}
+              className={`text-sm font-medium ${isDark ? 'text-sky-400 hover:text-sky-300' : 'text-slate-700 hover:text-slate-900'} transition-colors`}
             >
               Department Login →
             </Link>
+            <span className="hidden sm:inline text-slate-300 dark:text-zinc-600">·</span>
             <Link
               to="/track"
-              className={`text-xs sm:text-sm ${
+              className={`text-sm font-medium ${
                 isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
               } underline-offset-2 hover:underline transition-colors`}
             >
-              Already submitted? Track your complaint status
+              Already submitted? Track your complaint
             </Link>
           </div>
         </div>
