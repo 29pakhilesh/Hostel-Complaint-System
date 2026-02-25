@@ -107,15 +107,15 @@ const AdminDashboard = () => {
     resolved: complaints.filter(c => c.status === 'resolved').length,
   };
 
-  const bgClass = isDark ? 'bg-slate-950' : 'bg-slate-50';
-  const navBgClass = isDark ? 'bg-slate-900/90' : 'bg-white';
-  const navBorderClass = isDark ? 'border-slate-800' : 'border-slate-200';
-  const navTextMain = isDark ? 'text-slate-100' : 'text-slate-900';
-  const navTextMuted = isDark ? 'text-slate-400' : 'text-slate-600';
-  const cardBgClass = isDark ? 'bg-slate-900/90' : 'bg-white';
-  const cardBorderClass = isDark ? 'border-slate-800' : 'border-slate-200';
-  const textMain = isDark ? 'text-slate-100' : 'text-slate-900';
-  const textMuted = isDark ? 'text-slate-400' : 'text-slate-600';
+  const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
+  const navBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const navBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
+  const navTextMain = isDark ? 'text-zinc-100' : 'text-slate-900';
+  const navTextMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
+  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
+  const textMain = isDark ? 'text-zinc-100' : 'text-slate-900';
+  const textMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
 
   return (
     <div className={`relative min-h-screen ${bgClass}`}>
