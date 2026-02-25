@@ -15,9 +15,10 @@ import ThemeToggle from './components/ThemeToggle';
 function App() {
   return (
     <ThemeProvider>
-      <ThemeToggle />
       <Router>
-        <Routes>
+        <div className="min-h-screen relative">
+          <ThemeToggle />
+          <Routes>
           {/* Public complaint submission page */}
           <Route path="/" element={<PublicComplaint />} />
 
@@ -66,7 +67,20 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
+
+          {/* Admin complaint detail (super_admin view full complaint) */}
+          <Route
+            path="/dashboard/admin/complaints/:id"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRoles={['super_admin']}>
+                  <ComplaintDetail />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          </Routes>
+        </div>
       </Router>
     </ThemeProvider>
   );
