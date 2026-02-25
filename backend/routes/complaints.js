@@ -24,6 +24,74 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
 });
 
+const generateTrackingCode = () =>
+  String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
+
+// Public: get complaint details by ID or tracking code (for tracking)
+router.get('/public/:idOrCode', async (req, res) => {
+  try {
+    const { idOrCode } = req.params;
+
+    let result;
+    if (/^\d{5,6}$/.test(idOrCode)) {
+      // Short numeric tracking code
+      result = await pool.query(
+        `
+        SELECT 
+          c.id,
+          c.tracking_code,
+          c.title,
+          c.description,
+          c.status,
+          c.created_at,
+          c.updated_at,
+          c.hostel_name,
+          c.block,
+          c.room_number,
+          c.image_paths,
+          cat.name as category_name
+        FROM complaints c
+        JOIN categories cat ON c.category_id = cat.id
+        WHERE c.tracking_code = $1
+        `,
+        [idOrCode]
+      );
+    } else {
+      // Fallback: full complaint UUID
+      result = await pool.query(
+        `
+        SELECT 
+          c.id,
+          c.tracking_code,
+          c.title,
+          c.description,
+          c.status,
+          c.created_at,
+          c.updated_at,
+          c.hostel_name,
+          c.block,
+          c.room_number,
+          c.image_paths,
+          cat.name as category_name
+        FROM complaints c
+        JOIN categories cat ON c.category_id = cat.id
+        WHERE c.id = $1
+        `,
+        [idOrCode]
+      );
+    }
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Public complaint detail error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get all complaints (filtered by user role/category)
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -35,6 +103,7 @@ router.get('/', authenticateToken, async (req, res) => {
       query = `
         SELECT 
           c.id,
+          c.tracking_code,
           c.title,
           c.description,
           c.status,
@@ -60,6 +129,7 @@ router.get('/', authenticateToken, async (req, res) => {
         query = `
           SELECT 
             c.id,
+            c.tracking_code,
             c.title,
             c.description,
             c.status,
@@ -81,6 +151,7 @@ router.get('/', authenticateToken, async (req, res) => {
         query = `
           SELECT 
             c.id,
+            c.tracking_code,
             c.title,
             c.description,
             c.status,
@@ -118,6 +189,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     let query = `
       SELECT 
         c.id,
+        c.tracking_code,
         c.title,
         c.description,
         c.status,
@@ -193,6 +265,9 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     // Build image paths (public URLs)
     const imagePaths = (req.files || []).map((file) => `/uploads/${file.filename}`);
 
+    // Generate a short public tracking code
+    const trackingCode = generateTrackingCode();
+
     // Insert complaint without user_id (public submission)
     const result = await pool.query(
       `INSERT INTO complaints (
@@ -203,10 +278,11 @@ router.post('/', upload.array('images', 3), async (req, res) => {
          hostel_name,
          block,
          room_number,
-         image_paths
+         image_paths,
+         tracking_code
        )
-       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7)
-       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths`,
+       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7, $8)
+       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths, tracking_code`,
       [
         title.trim(),
         description.trim(),
@@ -215,6 +291,7 @@ router.post('/', upload.array('images', 3), async (req, res) => {
         block?.trim() || null,
         room_number?.trim() || null,
         imagePaths.length > 0 ? imagePaths : null,
+        trackingCode,
       ]
     );
 
