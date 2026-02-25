@@ -9,7 +9,7 @@ A professional, secure, and feature-rich complaint management system built with 
 - 📝 **Complaint Management**: Departments see only complaints for their category and can update status
 - 🖼️ **Image Attachments**: Up to 3 images can be uploaded with each complaint
 - 📍 **Location Details**: Hostel, optional block (for specific hostels), and room number stored with each complaint
-- 🔁 **3‑Step Workflow**: `pending → inprogress → resolved` status flow with detail view per complaint
+- 🔁 **Status Workflow**: `pending → inprogress → resolved` or **rejected**; departments and admin can reject complaints
 - 🆔 **Complaint Tracking**: Students receive a Complaint ID and can track status on a dedicated tracking page
 - 🎨 **Modern Dark & Light UI**: Theme toggle with professional slate/sky palette and subtle background effects
 - 🔒 **Security**: Password hashing with bcrypt, protected routes, input validation
@@ -78,6 +78,8 @@ npm run migrate      # base schema, categories, default super_admin
 npm run migrate-v2   # add department role + per-category department users
 npm run migrate-v3   # add hostel/block/room + image_paths to complaints
 npm run migrate-v4   # add inprogress status
+npm run migrate-v5   # add tracking_code for public tracking
+npm run migrate-v6   # add rejected status (required for Reject action)
 ```
 
 The base migration will:
@@ -168,7 +170,7 @@ All endpoints are prefixed with `/api`.
   - Up to 3 files under field name `images`
 
 - `PUT /api/complaints/:id` (department + super admin)  
-  Update complaint status. Body: `{ "status": "pending" | "inprogress" | "resolved" }`.
+  Update complaint status. Body: `{ "status": "pending" | "inprogress" | "resolved" | "rejected" }`.
 
 - `GET /api/complaints/public/:id` (public)  
   Read‑only details of a single complaint by ID, used by the public tracking page.
@@ -191,7 +193,9 @@ hostel-complaint-system/
 │   │   ├── migrate.js           # Base schema, categories, super admin
 │   │   ├── migrate-v2.js        # Department role + per-category users
 │   │   ├── migrate-v3.js        # Hostel/block/room + image_paths on complaints
-│   │   └── migrate-v4.js        # inprogress complaint status
+│   │   ├── migrate-v4.js        # inprogress complaint status
+│   │   ├── migrate-v5.js        # tracking_code for public tracking
+│   │   └── migrate-v6.js        # rejected complaint status
 │   ├── routes/
 │   │   ├── auth.js              # Authentication + super admin tools
 │   │   ├── complaints.js        # Complaint CRUD routes
@@ -275,7 +279,7 @@ From the project root you can use the `Makefile` shortcuts:
 # Install backend and frontend dependencies
 make install
 
-# Run all database migrations (base + v2 + v3)
+# Run all database migrations (base through v6, including rejected status)
 make migrate-db
 
 # Start backend (port 5002) and frontend (Vite) in separate terminals
