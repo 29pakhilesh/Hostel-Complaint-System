@@ -15,7 +15,7 @@ const SnowfallOverlay = () => {
   );
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden hidden lg:block">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden hidden lg:block print:hidden">
       {flakes.map((flake, index) => (
         <span
           key={index}
