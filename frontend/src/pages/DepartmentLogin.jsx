@@ -39,16 +39,16 @@ const DepartmentLogin = () => {
     }
   };
 
-  const bgClass = isDark ? 'bg-slate-950' : 'bg-slate-50';
-  const cardBgClass = isDark ? 'bg-slate-900/90' : 'bg-white';
-  const borderClass = isDark ? 'border-slate-800' : 'border-slate-200';
+  const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
+  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const borderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
   const headingClass = isDark ? 'text-sky-400' : 'text-slate-900';
-  const textClass = isDark ? 'text-slate-100' : 'text-slate-900';
-  const textMutedClass = isDark ? 'text-slate-400' : 'text-slate-600';
-  const inputBgClass = isDark ? 'bg-slate-950' : 'bg-slate-50';
-  const inputBorderClass = isDark ? 'border-slate-700' : 'border-slate-300';
-  const inputTextClass = isDark ? 'text-slate-100' : 'text-slate-900';
-  const placeholderClass = isDark ? 'placeholder-slate-500' : 'placeholder-slate-400';
+  const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
+  const textMutedClass = isDark ? 'text-zinc-400' : 'text-slate-600';
+  const inputBgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
+  const inputBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-300';
+  const inputTextClass = isDark ? 'text-zinc-100' : 'text-slate-900';
+  const placeholderClass = isDark ? 'placeholder-zinc-500' : 'placeholder-slate-400';
   const shadowStyle = isDark
     ? { boxShadow: '0 24px 70px rgba(0,0,0,0.75)' }
     : { boxShadow: '0 22px 60px rgba(15,23,42,0.18)' };
