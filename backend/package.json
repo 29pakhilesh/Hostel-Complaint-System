@@ -11,7 +11,8 @@
     "migrate-v2": "node migrations/migrate-v2.js",
     "migrate-v3": "node migrations/migrate-v3.js",
     "migrate-v4": "node migrations/migrate-v4.js",
-    "migrate-v5": "node migrations/migrate-v5.js"
+    "migrate-v5": "node migrations/migrate-v5.js",
+    "migrate-v6": "node migrations/migrate-v6.js"
   },
   "keywords": [],
   "author": "",
