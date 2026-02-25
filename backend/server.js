@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import complaintsRoutes from './routes/complaints.js';
 import categoriesRoutes from './routes/categories.js';
+import translateRoutes from './routes/translate.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintsRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/translate', translateRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
