@@ -19,6 +19,7 @@
 
 ## 📑 Table of contents
 
+- [Demo & overview](#-demo--overview)
 - [About](#-about)
 - [Features](#-features)
 - [Tech stack](#-tech-stack)
@@ -33,6 +34,22 @@
 - [Production build](#-production-build)
 - [Other docs](#-other-docs)
 - [License](#-license)
+
+---
+
+## 🎬 Demo & overview
+
+Watch a full walkthrough of the system: public complaint submission, tracking, department dashboard, super admin panel, and print/PDF flow.
+
+<div align="center">
+
+[![Hostel Complaint System – Demo & overview](https://img.youtube.com/vi/2k0AIWF7i0I/maxresdefault.jpg)](https://youtu.be/2k0AIWF7i0I)
+
+[![Watch on YouTube](https://img.shields.io/badge/▶_Watch_on-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/2k0AIWF7i0I)
+
+*Click the thumbnail or button to open the video.*
+
+</div>
 
 ---
 
