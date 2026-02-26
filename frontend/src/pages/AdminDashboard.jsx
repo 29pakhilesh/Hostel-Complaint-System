@@ -5,6 +5,8 @@ import { getUser, clearAuth } from '../utils/auth';
 import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
 
+const JUIT_LOGO_SRC = '/juit-logo.png';
+
 const AdminDashboard = () => {
   const { isDark } = useTheme();
   const [complaints, setComplaints] = useState([]);
@@ -17,8 +19,13 @@ const AdminDashboard = () => {
   const [newDeptPassword, setNewDeptPassword] = useState('');
   const [resetKey, setResetKey] = useState('');
   const [newSuperPassword, setNewSuperPassword] = useState('');
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [deptOpen, setDeptOpen] = useState(false);
   const navigate = useNavigate();
   const user = getUser();
+
+  const selectedCategoryLabel = selectedCategory ? (categories.find(c => c.id === selectedCategory)?.name || 'All') : 'All Categories';
+  const selectedDeptLabel = selectedDeptId ? (departments.find(d => d.id === selectedDeptId)?.full_name || departments.find(d => d.id === selectedDeptId)?.email || 'Select') : 'Select department';
 
   useEffect(() => {
     fetchComplaints();
@@ -111,28 +118,36 @@ const AdminDashboard = () => {
     rejected: complaints.filter(c => c.status === 'rejected').length,
   };
 
-  const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const navBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
-  const navBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
+  const bgClass = isDark ? 'bg-[#0a0a0f]' : 'bg-gradient-to-br from-slate-50 via-white to-sky-50/30';
+  const navBgClass = isDark ? 'bg-zinc-900/70 backdrop-blur-xl border-b border-zinc-800/60' : 'bg-white/70 backdrop-blur-xl border-b border-slate-200/80';
   const navTextMain = isDark ? 'text-zinc-100' : 'text-slate-900';
   const navTextMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
-  const cardBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
+  const cardBgClass = isDark ? 'bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50' : 'bg-white/75 backdrop-blur-sm border border-slate-200/80 shadow-lg shadow-slate-200/20';
+  const cardBorderClass = '';
   const textMain = isDark ? 'text-zinc-100' : 'text-slate-900';
   const textMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
+  const inputBgClass = isDark ? 'bg-zinc-900 border-zinc-600 text-zinc-100' : 'bg-slate-50 border-slate-300 text-slate-900';
+  const dropdownBgClass = isDark ? 'bg-zinc-900 border-zinc-600' : 'bg-white border-slate-200';
 
   return (
-    <div className={`relative min-h-screen ${bgClass}`}>
+    <div className={`relative min-h-screen ${bgClass} transition-colors duration-300`}>
       <SnowfallOverlay />
-      <nav className={`${navBgClass} border-b border-zinc-700/60 ${navBorderClass}`}>
+      <nav className={navBgClass}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className={`text-xl font-bold ${navTextMain}`}>Admin Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <img src={JUIT_LOGO_SRC} alt="JUIT" className="h-9 w-9 object-contain" />
+              <h1 className={`text-xl font-bold tracking-tight ${navTextMain}`}>
+                <span className={isDark ? 'text-sky-400' : 'text-sky-600'}>Admin</span> Dashboard
+              </h1>
+            </div>
             <div className="flex items-center gap-4">
-              <span className={navTextMuted}>{user?.full_name} ({user?.role})</span>
+              <span className={`text-sm font-medium ${navTextMuted}`}>{user?.full_name}</span>
               <button
                 onClick={handleLogout}
-                className={`px-4 py-2 ${isDark ? 'bg-sky-500 text-white hover:bg-sky-400' : 'bg-slate-900 text-white hover:bg-slate-800'} rounded-lg transition-all duration-200`}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  isDark ? 'bg-sky-500/90 text-white hover:bg-sky-400 shadow-lg shadow-sky-500/20' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md'
+                }`}
               >
                 Logout
               </button>
@@ -143,73 +158,104 @@ const AdminDashboard = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className={`text-2xl font-bold mb-6 ${textMain}`}>Complaints Overview</h2>
+          <h2 className={`text-2xl font-bold mb-6 ${textMain} tracking-tight`}>Complaints Overview</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-6">
-            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
-              <div className={`${textMuted} text-sm font-medium mb-2`}>Total Complaints</div>
-              <div className={`text-3xl font-bold ${textMain}`}>{stats.total}</div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02]`}>
+              <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>Total</div>
+              <div className={`text-2xl font-bold ${textMain}`}>{stats.total}</div>
             </div>
-            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
-              <div className={`${textMuted} text-sm font-medium mb-2`}>Pending</div>
-              <div className="text-3xl font-bold text-amber-400">{stats.pending}</div>
+            <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02] border-l-4 border-amber-400`}>
+              <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>Pending</div>
+              <div className="text-2xl font-bold text-amber-400">{stats.pending}</div>
             </div>
-            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
-              <div className={`${textMuted} text-sm font-medium mb-2`}>In Progress</div>
-              <div className="text-3xl font-bold text-sky-400">{stats.inprogress}</div>
+            <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02] border-l-4 border-sky-400`}>
+              <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>In Progress</div>
+              <div className="text-2xl font-bold text-sky-400">{stats.inprogress}</div>
             </div>
-            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
-              <div className={`${textMuted} text-sm font-medium mb-2`}>Resolved</div>
-              <div className="text-3xl font-bold text-emerald-400">{stats.resolved}</div>
+            <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02] border-l-4 border-emerald-400`}>
+              <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>Resolved</div>
+              <div className="text-2xl font-bold text-emerald-400">{stats.resolved}</div>
             </div>
-            <div className={`${cardBgClass} rounded-xl p-6 border ${cardBorderClass}`}>
-              <div className={`${textMuted} text-sm font-medium mb-2`}>Rejected</div>
-              <div className="text-3xl font-bold text-red-400">{stats.rejected}</div>
+            <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02] border-l-4 border-red-400`}>
+              <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>Rejected</div>
+              <div className="text-2xl font-bold text-red-400">{stats.rejected}</div>
             </div>
           </div>
 
-          <div className={`${cardBgClass} rounded-xl p-4 border ${cardBorderClass}`}>
-            <label className={`block text-sm font-medium mb-2 ${textMain}`}>
+          <div className={`${cardBgClass} rounded-2xl p-4 ${cardBorderClass} mb-6`}>
+            <label className={`block text-sm font-semibold mb-2 ${textMain}`}>
               Filter by Category
             </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full md:w-64 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative w-full md:w-64">
+              <button
+                type="button"
+                onClick={() => { setCategoryOpen(o => !o); setDeptOpen(false); }}
+                className={`w-full px-4 py-2.5 rounded-xl border text-left text-sm font-medium flex items-center justify-between ${inputBgClass} focus:outline-none focus:ring-2 focus:ring-sky-500/50`}
+              >
+                <span>{selectedCategoryLabel}</span>
+                <span className={textMuted}>{categoryOpen ? '▲' : '▼'}</span>
+              </button>
+              {categoryOpen && (
+                <div className={`absolute z-20 mt-1 w-full rounded-xl border shadow-xl ${dropdownBgClass} max-h-56 overflow-auto`}>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedCategory(''); setCategoryOpen(false); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm ${!selectedCategory ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => { setSelectedCategory(cat.id); setCategoryOpen(false); }}
+                      className={`w-full px-4 py-2.5 text-left text-sm ${selectedCategory === cat.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           {user?.role === 'super_admin' && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`${cardBgClass} rounded-xl p-5 border ${cardBorderClass}`}>
+              <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass}`}>
                 <h3 className={`text-sm font-semibold mb-3 ${textMain}`}>
                   Change Department Password
                 </h3>
                 <div className="space-y-3">
-                  <select
-                    value={selectedDeptId}
-                    onChange={(e) => setSelectedDeptId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select department</option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.full_name || d.email}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => { setDeptOpen(o => !o); setCategoryOpen(false); }}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-left text-sm flex items-center justify-between ${inputBgClass} focus:outline-none focus:ring-2 focus:ring-sky-500/50`}
+                    >
+                      <span>{selectedDeptLabel}</span>
+                      <span className={textMuted}>{deptOpen ? '▲' : '▼'}</span>
+                    </button>
+                    {deptOpen && (
+                      <div className={`absolute z-20 mt-1 w-full rounded-xl border shadow-xl ${dropdownBgClass} max-h-48 overflow-auto`}>
+                        {departments.map((d) => (
+                          <button
+                            key={d.id}
+                            type="button"
+                            onClick={() => { setSelectedDeptId(d.id); setDeptOpen(false); }}
+                            className={`w-full px-3 py-2 text-left text-sm ${selectedDeptId === d.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                          >
+                            {d.full_name || d.email}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="password"
                     value={newDeptPassword}
                     onChange={(e) => setNewDeptPassword(e.target.value)}
                     placeholder="New password"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 ${inputBgClass}`}
                   />
                   <button
                     type="button"
@@ -225,14 +271,14 @@ const AdminDashboard = () => {
                         alert(err.response?.data?.error || 'Failed to update password');
                       }
                     }}
-                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     Update password
                   </button>
                 </div>
               </div>
 
-              <div className={`${cardBgClass} rounded-xl p-5 border ${cardBorderClass}`}>
+              <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass}`}>
                 <h3 className={`text-sm font-semibold mb-3 ${textMain}`}>
                   Reset Super Admin Password (secret key)
                 </h3>
@@ -242,14 +288,14 @@ const AdminDashboard = () => {
                     value={resetKey}
                     onChange={(e) => setResetKey(e.target.value)}
                     placeholder="Reset key"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 ${inputBgClass}`}
                   />
                   <input
                     type="password"
                     value={newSuperPassword}
                     onChange={(e) => setNewSuperPassword(e.target.value)}
                     placeholder="New super admin password"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 ${inputBgClass}`}
                   />
                   <button
                     type="button"
@@ -267,7 +313,7 @@ const AdminDashboard = () => {
                         alert(err.response?.data?.error || 'Failed to reset password');
                       }
                     }}
-                    className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     Reset super admin password
                   </button>
@@ -278,42 +324,42 @@ const AdminDashboard = () => {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-slate-400">Loading complaints...</div>
+          <div className={`text-center py-16 ${textMuted}`}>Loading complaints...</div>
         ) : complaints.length === 0 ? (
-          <div className={`text-center py-12 ${cardBgClass} rounded-xl border ${cardBorderClass}`}>
+          <div className={`${cardBgClass} rounded-2xl py-16 text-center ${cardBorderClass}`}>
             <p className={textMuted}>No complaints found.</p>
           </div>
         ) : (
-          <div className={`${cardBgClass} rounded-xl border ${cardBorderClass} overflow-hidden`}>
+          <div className={`${cardBgClass} rounded-2xl overflow-hidden ${cardBorderClass}`}>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className={isDark ? 'bg-slate-900' : 'bg-slate-100'}>
+                <thead className={isDark ? 'bg-zinc-800/80' : 'bg-slate-100/80'}>
                   <tr>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Title
                     </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Category
                     </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Student
                     </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Status
                     </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Created
                     </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className={isDark ? 'divide-y divide-slate-800/80' : 'divide-y divide-slate-200'}>
+                <tbody className={isDark ? 'divide-y divide-zinc-700/50' : 'divide-y divide-slate-200'}>
                   {complaints.map((complaint) => (
                     <tr
                       key={complaint.id}
-                      className={`${isDark ? 'hover:bg-slate-900/60' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
+                      className={`${isDark ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50/80'} transition-colors cursor-pointer`}
                       onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
                     >
                       <td className="px-6 py-4">
@@ -338,17 +384,17 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
-                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+                          className="px-4 py-2 rounded-xl text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-all"
                         >
                           View details
                         </button>
                         <button
                           onClick={() => handleStatusToggle(complaint.id, complaint.status)}
                           disabled={updatingId === complaint.id}
-                          className={`ml-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                          className={`ml-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                             complaint.status === 'pending'
-                              ? 'bg-green-600 hover:bg-green-700 text-white'
-                              : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                              ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                              : 'bg-amber-500 hover:bg-amber-400 text-white'
                           }`}
                         >
                           {updatingId === complaint.id
