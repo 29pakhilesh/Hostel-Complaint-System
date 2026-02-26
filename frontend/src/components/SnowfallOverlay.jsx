@@ -2,20 +2,22 @@ import React, { useMemo } from 'react';
 
 const SnowfallOverlay = () => {
   // Precompute flakes once per mount so typing / state changes don't regenerate them
+  const snowflakeChars = ['❄', '❅', '❆'];
   const flakes = useMemo(
     () =>
-      Array.from({ length: 40 }).map(() => ({
+      Array.from({ length: 75 }).map((_, i) => ({
         left: Math.random() * 100,
-        delay: Math.random() * 20,
-        duration: 12 + Math.random() * 12,
-        size: 2 + Math.random() * 4,
-        opacity: 0.2 + Math.random() * 0.4,
+        delay: Math.random() * 18,
+        duration: 10 + Math.random() * 10,
+        size: 3 + Math.random() * 6,
+        opacity: 0.5 + Math.random() * 0.5,
+        char: snowflakeChars[i % snowflakeChars.length],
       })),
     []
   );
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden hidden lg:block print:hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden print:hidden" aria-hidden="true">
       {flakes.map((flake, index) => (
         <span
           key={index}
@@ -28,7 +30,7 @@ const SnowfallOverlay = () => {
             opacity: flake.opacity,
           }}
         >
-          ✦
+          {flake.char}
         </span>
       ))}
     </div>
