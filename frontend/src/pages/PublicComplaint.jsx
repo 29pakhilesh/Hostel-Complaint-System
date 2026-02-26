@@ -154,7 +154,7 @@ const PublicComplaint = () => {
   };
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBgClass = isDark ? 'bg-dark-black-800/75 backdrop-blur-md' : 'bg-white/75 backdrop-blur-md';
   const borderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
   const headingClass = isDark ? 'text-sky-400' : 'text-slate-900';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
@@ -263,7 +263,7 @@ const PublicComplaint = () => {
 
         {/* Right tile: complaint form */}
         <div
-          className={`${cardBgClass} rounded-2xl p-6 sm:p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500 flex flex-col justify-center`}
+          className={`${cardBgClass} rounded-2xl p-6 sm:p-8 shadow-2xl border border-zinc-700/60 ${borderClass} transition-colors duration-500 flex flex-col justify-center`}
           style={shadowStyle}
         >
           {formErrors.submit && (
