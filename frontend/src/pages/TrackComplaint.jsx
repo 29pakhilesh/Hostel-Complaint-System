@@ -35,7 +35,7 @@ const TrackComplaint = () => {
   }, [idFromUrl]);
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBgClass = isDark ? 'bg-dark-black-800/75 backdrop-blur-md print:bg-white' : 'bg-white/75 backdrop-blur-md print:bg-white';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
   const textMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
 
@@ -84,10 +84,17 @@ const TrackComplaint = () => {
     window.print();
   };
 
+  const JUIT_LOGO_SRC = '/juit-logo.png';
+
   return (
     <div className={`relative min-h-screen ${bgClass} py-10 px-4 sm:px-6 lg:px-8 print:min-h-0 print:py-0 print:px-0 print-status-page`}>
       <SnowfallOverlay />
       <div className="print-status-page-inner max-w-4xl mx-auto print:mx-0">
+        {/* Print-only: JUIT logo header */}
+        <div className="hidden print:flex print:items-center print:gap-2 print:pb-2 print:mb-2 print:border-b print:border-slate-300 print:flex-shrink-0">
+          <img src={JUIT_LOGO_SRC} alt="JUIT" className="print:h-8 print:w-8 print:object-contain" />
+          <span className="print:text-xs print:font-semibold print:text-black">Jaypee University of Information Technology</span>
+        </div>
         {/* Hide in print: back link, form, buttons */}
         <div className="print:hidden mb-6 flex items-center justify-between gap-4 flex-wrap">
           <Link
