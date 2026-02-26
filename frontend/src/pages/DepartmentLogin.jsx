@@ -40,7 +40,7 @@ const DepartmentLogin = () => {
   };
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBgClass = isDark ? 'bg-dark-black-800/75 backdrop-blur-md' : 'bg-white/75 backdrop-blur-md';
   const borderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
   const headingClass = isDark ? 'text-sky-400' : 'text-slate-900';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
