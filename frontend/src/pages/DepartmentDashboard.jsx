@@ -73,12 +73,12 @@ const DepartmentDashboard = () => {
   const categoryName = complaints.length > 0 ? complaints[0]?.category_name : user?.full_name?.replace(' Department', '');
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const navBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const navBgClass = isDark ? 'bg-dark-black-800/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md';
   const navBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
   const headingClass = isDark ? 'text-sky-400' : 'text-slate-900';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
   const textMutedClass = isDark ? 'text-zinc-400' : 'text-slate-600';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBgClass = isDark ? 'bg-dark-black-800/75 backdrop-blur-md' : 'bg-white/75 backdrop-blur-md';
   const cardBorderClass = isDark ? 'border-dark-black-700' : 'border-slate-200';
   const tableHeaderBgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-100';
   const tableRowHoverClass = isDark ? 'hover:bg-dark-black-900/60' : 'hover:bg-slate-50';
