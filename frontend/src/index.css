@@ -31,16 +31,28 @@ body:not(.dark) {
   box-sizing: border-box;
 }
 
-/* Subtle desktop-only snowfall effect for unused side areas */
+/* Snowfall effect - visible on all pages */
 .snowflake {
   position: absolute;
-  top: -10px;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 0 4px rgba(15, 23, 42, 0.7);
+  top: -20px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.6),
+    0 0 12px rgba(147, 197, 253, 0.4);
   animation-name: snowfall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: transform;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* Light mode: snowflakes visible on light background */
+body:not(.dark) .snowflake {
+  color: rgba(59, 130, 246, 0.55);
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.9),
+    0 0 10px rgba(147, 197, 253, 0.5);
+  filter: drop-shadow(0 0 1px rgba(59, 130, 246, 0.4));
 }
 
 @keyframes snowfall {
@@ -48,7 +60,7 @@ body:not(.dark) {
     transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translate3d(15px, 110vh, 0);
+    transform: translate3d(28px, 110vh, 0);
   }
 }
 
@@ -63,7 +75,7 @@ body:not(.dark) {
   }
 }
 
-/* Print: always white background, full A4 single page */
+/* Print: always white background, single page, no blank second page */
 @media print {
   html,
   body,
@@ -75,6 +87,23 @@ body:not(.dark) {
     color: #111827 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  /* Prevent blank second page: constrain height and avoid page break after */
+  html, body {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    height: auto !important;
+    max-height: 100vh !important;
+  }
+  .print-status-page,
+  .print-confirmation-page {
+    page-break-after: avoid !important;
+  }
+  .print-status-page {
+    break-after: avoid !important;
+  }
+  .print-confirmation-page {
+    break-after: avoid !important;
   }
   /* Landscape A4: 297mm x 210mm, margin 10mm → usable 277mm x 190mm */
   .print-status-page {
@@ -187,6 +216,14 @@ body:not(.dark) {
   .print-status-content .text-sky-300,
   .print-status-content .text-emerald-300 {
     color: #0d9488 !important;
+  }
+  /* Confirmation page: single page, no overflow */
+  .print-confirmation-page {
+    max-height: 277mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 8mm 10mm !important;
   }
   @page {
     size: A4 landscape;
