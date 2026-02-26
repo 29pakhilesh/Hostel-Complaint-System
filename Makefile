@@ -5,9 +5,12 @@ SHELL := /bin/bash
 help:
 	@echo "Available commands:"
 	@echo "  make install        - Install backend and frontend dependencies"
-	@echo "  make backend        - Start backend server (port 5002)"
-	@echo "  make frontend       - Start frontend dev server (Vite)"
-	@echo "  make dev            - Start backend and frontend (run in separate terminals)"
+	@echo ""
+	@echo "  Run the app (choose one):"
+	@echo "  make dev            - Start backend + frontend in ONE terminal (backend in background)"
+	@echo "  make backend        - Start only backend (port 5002). Use in terminal 1."
+	@echo "  make frontend       - Start only frontend (Vite). Use in terminal 2."
+	@echo ""
 	@echo "  make migrate-db     - Run all database migrations (v1, v2, v3, v4, v5, v6)"
 	@echo "  make stop-backend   - Stop backend server on port 5002"
 	@echo "  make stop-frontend  - Stop Vite dev server (common ports)"
@@ -29,11 +32,9 @@ backend:
 frontend:
 	cd frontend && npm run dev
 
-# Convenience: remind user to run in two terminals
+# Single terminal: backend in background, frontend in foreground (Ctrl+C stops frontend; use make stop-backend to stop backend)
 dev:
-	@echo "Run backend and frontend in two terminals:"
-	@echo "  Terminal 1: make backend"
-	@echo "  Terminal 2: make frontend"
+	cd backend && npm start & cd frontend && npm run dev
 
 stop-backend:
 	-@lsof -ti:5002 | xargs kill -9 2>/dev/null || echo "No backend running on port 5002"
