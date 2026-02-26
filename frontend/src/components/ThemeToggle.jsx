@@ -1,11 +1,7 @@
 import { useTheme } from '../contexts/ThemeContext';
-import { useLocation } from 'react-router-dom';
 
 const ThemeToggle = () => {
   const { isDark, toggleTheme } = useTheme();
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/login/admin') || location.pathname.startsWith('/dashboard/admin');
-  if (isAdminRoute) return null;
 
   return (
     <button
