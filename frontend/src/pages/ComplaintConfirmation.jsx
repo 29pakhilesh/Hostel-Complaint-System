@@ -4,6 +4,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
 import api from '../utils/api';
 
+const JUIT_LOGO_SRC = '/juit-logo.png';
+
 const ComplaintConfirmation = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -44,7 +46,7 @@ const ComplaintConfirmation = () => {
   }, [complaint, id]);
 
   const bgClass = isDark ? 'bg-dark-black-900' : 'bg-slate-50';
-  const cardBgClass = isDark ? 'bg-dark-black-800' : 'bg-white';
+  const cardBgClass = isDark ? 'bg-dark-black-800/75 backdrop-blur-md' : 'bg-white/75 backdrop-blur-md';
   const textClass = isDark ? 'text-zinc-100' : 'text-slate-900';
   const textMuted = isDark ? 'text-zinc-400' : 'text-slate-600';
 
@@ -93,11 +95,15 @@ const ComplaintConfirmation = () => {
                   </p>
                 </header>
 
-                <section className="mb-6 rounded-xl border border-slate-600/60 bg-slate-950/40 p-4 sm:p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <section className={`mb-6 rounded-xl border p-4 sm:p-5 ${
+                  isDark ? 'border-sky-500/40 bg-sky-950/50' : 'border-sky-200 bg-sky-50'
+                }`}>
+                  <p className={`text-xs font-semibold uppercase tracking-wide ${textMuted}`}>
                     Complaint ID
                   </p>
-                  <p className={`mt-2 font-mono text-sm sm:text-base ${textClass} break-all`}>
+                  <p className={`mt-2 font-mono text-base sm:text-lg font-semibold break-all ${
+                    isDark ? 'text-sky-100' : 'text-sky-900'
+                  }`}>
                     {complaint.tracking_code || complaint.id}
                   </p>
                 </section>
@@ -163,78 +169,83 @@ const ComplaintConfirmation = () => {
         </div>
       </div>
 
-      {/* Print-only layout: big tick + essential details */}
+      {/* Print-only layout: JUIT logo + big tick + essential details, single page */}
       {!loading && !error && complaint && (
-        <div className="hidden print:block min-h-screen bg-white text-black">
-          <div className="max-w-3xl mx-auto py-12 px-6">
-            <div className="flex flex-col items-center text-center mb-8">
+        <div className="hidden print:block print-confirmation-page bg-white text-black" style={{ maxHeight: '277mm', overflow: 'hidden' }}>
+          <div className="max-w-3xl mx-auto">
+            {/* JUIT logo header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #e5e7eb' }}>
+              <img src={JUIT_LOGO_SRC} alt="JUIT" style={{ height: '28px', width: '28px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#111827' }}>Jaypee University of Information Technology</span>
+            </div>
+            <div className="flex flex-col items-center text-center mb-6">
               <div
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '9999px',
-                  border: '4px solid #16a34a',
+                  border: '3px solid #16a34a',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: '16px',
+                  marginBottom: '8px',
                 }}
               >
-                <span style={{ fontSize: '48px', color: '#16a34a' }}>✓</span>
+                <span style={{ fontSize: '32px', color: '#16a34a' }}>✓</span>
               </div>
-              <h1 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '4px' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '2px' }}>
                 Complaint Registered Successfully
               </h1>
-              <p style={{ fontSize: '14px', color: '#4b5563' }}>
+              <p style={{ fontSize: '12px', color: '#4b5563' }}>
                 Please keep this confirmation sheet for your records.
               </p>
             </div>
 
-            <div style={{ fontSize: '13px', lineHeight: 1.6 }}>
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+            <div style={{ fontSize: '12px', lineHeight: 1.5 }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Complaint ID
               </p>
               <p
                 style={{
                   fontFamily: 'monospace',
-                  fontSize: '14px',
-                  marginBottom: '16px',
+                  fontSize: '12px',
+                  marginBottom: '10px',
                   wordBreak: 'break-all',
                 }}
               >
                 {complaint.tracking_code || complaint.id}
               </p>
 
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Title
               </p>
-              <p style={{ marginBottom: '12px' }}>{complaint.title}</p>
+              <p style={{ marginBottom: '8px' }}>{complaint.title}</p>
 
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Department
               </p>
-              <p style={{ marginBottom: '12px' }}>{complaint.category_name}</p>
+              <p style={{ marginBottom: '8px' }}>{complaint.category_name}</p>
 
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Hostel / Room
               </p>
-              <p style={{ marginBottom: '12px' }}>
+              <p style={{ marginBottom: '8px' }}>
                 {complaint.hostel_name || 'Not specified'}
                 {complaint.block ? `, Block ${complaint.block}` : ''}
                 {complaint.room_number ? `, Room ${complaint.room_number}` : ''}
               </p>
 
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Submitted on
               </p>
-              <p style={{ marginBottom: '16px' }}>
+              <p style={{ marginBottom: '10px' }}>
                 {new Date(complaint.created_at).toLocaleString()}
               </p>
 
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', color: '#6b7280' }}>
+              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
                 Description
               </p>
-              <p>{complaint.description}</p>
+              <p style={{ marginBottom: 0 }}>{complaint.description}</p>
             </div>
           </div>
         </div>
