@@ -1,71 +1,85 @@
+<div align="center">
+
 # 🏨 Hostel Complaint Management System
 
-A professional, secure Hostel Grievance Redressal System with structured complaint routing, role-based dashboards, and public complaint tracking with print-ready reports.
+**A secure, role-based grievance redressal system for hostels with public submission, department dashboards, and print-ready tracking.**
+
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+
+*JWT · bcrypt · Multer · React Router · Axios*
+
+</div>
 
 ---
 
-## 🛠 Tech Stack
+## 📑 Table of contents
 
-### Backend
-
-| Technology | Description |
-|------------|-------------|
-| ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) | Runtime |
-| ![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white) | Web framework |
-| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white) | Database |
-| ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) | Authentication |
-| ![bcrypt](https://img.shields.io/badge/bcrypt-394D3B?style=for-the-badge) | Password hashing |
-| ![Multer](https://img.shields.io/badge/Multer-000000?style=for-the-badge) | File uploads |
-
-### Frontend
-
-| Technology | Description |
-|------------|-------------|
-| ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | UI library |
-| ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white) | Build tool |
-| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white) | Styling |
-| ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white) | Routing |
-| ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white) | HTTP client |
+- [About](#-about)
+- [Features](#-features)
+- [Tech stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Running the app](#-running-the-app)
+- [Project structure](#-project-structure)
+- [Default credentials](#-default-credentials)
+- [Makefile commands](#-makefile-commands)
+- [Security](#-security)
+- [Print & tracking](#-print--tracking)
+- [Production build](#-production-build)
+- [Other docs](#-other-docs)
+- [License](#-license)
 
 ---
 
-## 🚀 Core Features
+## 📖 About
 
-### 👨‍🎓 Public complaint system
-- Submit complaints without login
-- Upload up to 3 images
-- Auto-generated 6-digit tracking ID
-- Track complaint via dedicated tracking page
-- A4 landscape print-ready status (single-page layout)
-
-### 🏢 Department dashboard
-- Category-based complaint access
-- Update status: `pending` → `in progress` → `resolved` / `rejected`
-- View attachments and location details
-- Secure department-only login
-
-### 🛡️ Super admin panel
-- View all complaints
-- Filter by category
-- Full complaint detail view
-- Manage department users
-- Change / reset passwords
+This project is a **Hostel Grievance Redressal System** for institutions (e.g. JUIT). Students submit complaints publicly with optional images; departments log in to manage and resolve complaints by category; a super admin oversees all complaints and user management. Complaints are tracked via a unique ID with a print-friendly status page.
 
 ---
 
-## 🎨 UI & experience
+## ✨ Features
 
-- 🌗 Dark / light theme toggle
-- ❄️ Snowfall background effect
-- 📄 Print-optimized tracking page (white background, no UI clutter)
-- 📱 Responsive (mobile + desktop)
-- ⚡ Slate/sky themed design
+| Area | Description |
+|------|-------------|
+| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
+| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · Secure department-only login |
+| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords |
+| **🎨 UI** | Dark/light theme · Snowfall background · Print-optimized (white background, no clutter) · Responsive · Slate/sky themed design |
 
 ---
 
-## ⚙️ Installation & setup
+## 🛠 Tech stack
 
-### 1. Clone repository
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![bcrypt](https://img.shields.io/badge/bcrypt-394D3B?style=for-the-badge)
+![Multer](https://img.shields.io/badge/Multer-000000?style=for-the-badge)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+
+---
+
+## 📋 Prerequisites
+
+- **Node.js** (v18+)
+- **PostgreSQL** (v12+)
+- **npm**
+
+---
+
+## ⚙️ Installation
+
+### 1. Clone and enter the repo
 
 ```bash
 git clone https://github.com/29pakhilesh/Hostel-Complaint-System
@@ -78,16 +92,11 @@ cd hostel-complaint-system
 make install
 ```
 
-Or manually:
-
-```bash
-cd backend && npm install
-cd ../frontend && npm install
-```
+Or manually: `cd backend && npm install` then `cd ../frontend && npm install`.
 
 ### 3. Backend environment
 
-Create `backend/.env` (see `backend/.env.example`):
+Create `backend/.env` (use `backend/.env.example` as reference):
 
 ```env
 PORT=5002
@@ -101,19 +110,16 @@ JWT_EXPIRES_IN=24h
 SUPER_ADMIN_RESET_KEY=your_reset_key
 ```
 
-Create the database:
+Create the database and run migrations:
 
 ```bash
 createdb hostel_complaints
-```
-
-Run migrations:
-
-```bash
 make migrate-db
 ```
 
-### 4. Run the app
+---
+
+## 🚀 Running the app
 
 **Option A — Single terminal**
 
@@ -121,37 +127,18 @@ make migrate-db
 make dev
 ```
 
-Starts backend (in background) and frontend in one terminal. Use `make stop-backend` to stop the backend after exiting the frontend.
+Backend runs in the background, frontend in the foreground. After exiting, stop the backend with `make stop-backend` if needed.
 
 **Option B — Two terminals**
 
-Terminal 1:
+| Terminal 1 | Terminal 2 |
+|------------|------------|
+| `make backend` | `make frontend` |
 
-```bash
-make backend
-```
-
-Terminal 2:
-
-```bash
-make frontend
-```
-
-| Service   | URL                  |
-|----------|----------------------|
-| Backend  | http://localhost:5002 |
-| Frontend | http://localhost:5173 (Vite) |
-
----
-
-## 🔐 Default credentials
-
-| Role          | Email              | Password  |
-|---------------|--------------------|-----------|
-| Super Admin   | `admin@hostel.com` | `admin123` |
-| Department    | `<category>@hostel.com` | `dept123` |
-
-Students do not have accounts; complaints are submitted publicly.
+| Service | URL |
+|---------|-----|
+| Backend | http://localhost:5002 |
+| Frontend | http://localhost:5173 |
 
 ---
 
@@ -159,46 +146,104 @@ Students do not have accounts; complaints are submitted publicly.
 
 ```
 hostel-complaint-system/
-├── backend/
-│   ├── config/
-│   ├── middleware/
-│   ├── migrations/
-│   ├── routes/
-│   ├── uploads/
-│   └── server.js
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── contexts/
-│   │   ├── pages/
-│   │   └── utils/
-│   └── vite.config.js
+├── .gitignore
 ├── Makefile
-└── README.md
+├── README.md
+├── QUICKSTART.md
+├── FILES.md
+│
+├── backend/
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── package.json
+│   ├── server.js
+│   ├── config/
+│   │   └── database.js
+│   ├── middleware/
+│   │   └── auth.js
+│   ├── migrations/
+│   │   ├── migrate.js
+│   │   ├── migrate-v2.js
+│   │   ├── migrate-v3.js
+│   │   ├── migrate-v4.js
+│   │   ├── migrate-v5.js
+│   │   └── migrate-v6.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── categories.js
+│   │   ├── complaints.js
+│   │   └── translate.js
+│   ├── scripts/
+│   │   └── create-user.js
+│   └── uploads/              # runtime: complaint images
+│
+└── frontend/
+    ├── .gitignore
+    ├── package.json
+    ├── index.html
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── postcss.config.js
+    ├── public/
+    │   └── juit-logo.png
+    └── src/
+        ├── main.jsx
+        ├── App.jsx
+        ├── index.css
+        ├── components/
+        │   ├── ProtectedRoute.jsx
+        │   ├── RoleBasedRoute.jsx
+        │   ├── SnowfallOverlay.jsx
+        │   └── ThemeToggle.jsx
+        ├── contexts/
+        │   └── ThemeContext.jsx
+        ├── pages/
+        │   ├── PublicComplaint.jsx
+        │   ├── TrackComplaint.jsx
+        │   ├── ComplaintConfirmation.jsx
+        │   ├── DepartmentLogin.jsx
+        │   ├── DepartmentDashboard.jsx
+        │   ├── ComplaintDetail.jsx
+        │   ├── Login.jsx
+        │   ├── AdminDashboard.jsx
+        │   └── StudentDashboard.jsx
+        └── utils/
+            ├── api.js
+            └── auth.js
 ```
+
+---
+
+## 🔐 Default credentials
+
+| Role | Email | Password |
+|------|--------|----------|
+| **Super Admin** | `admin@hostel.com` | `admin123` |
+| **Department** | `<category>@hostel.com` | `dept123` |
+
+Students do not have accounts; complaints are submitted publicly.
 
 ---
 
 ## 🧰 Makefile commands
 
-| Command           | Description |
-|-------------------|-------------|
-| `make help`       | Show all commands |
-| `make install`    | Install backend + frontend dependencies |
-| `make dev`        | Start backend + frontend in one terminal |
-| `make backend`    | Start only backend (port 5002) |
-| `make frontend`   | Start only frontend (Vite) |
-| `make migrate-db` | Run all database migrations |
-| `make stop-backend`  | Stop backend on port 5002 |
-| `make stop-frontend` | Stop Vite dev server |
+| Command | Description |
+|---------|-------------|
+| `make help` | Show all commands |
+| `make install` | Install backend + frontend dependencies |
+| `make dev` | Start backend + frontend in one terminal |
+| `make backend` | Start only backend (port 5002) |
+| `make frontend` | Start only frontend (Vite) |
+| `make migrate-db` | Run all database migrations (v1–v6) |
+| `make stop-backend` | Stop backend on port 5002 |
+| `make stop-frontend` | Stop Vite dev server (ports 3000–3002) |
 
 ---
 
 ## 🔒 Security
 
 - JWT-based authentication
-- Role-based access control
+- Role-based access control (super_admin, department)
 - Password hashing (bcrypt)
 - Parameterized SQL queries
 - Protected frontend routes
@@ -208,10 +253,10 @@ hostel-complaint-system/
 
 ## 📄 Print & tracking
 
-- Public tracking: `/track?id=<tracking_code>`
+- **Public tracking:** `/track?id=<tracking_code>`
 - A4 landscape, single-page layout
 - Images included in print
-- Buttons and toggles hidden in PDF
+- Buttons and theme toggle hidden in PDF
 - Resolved status indicator
 
 ---
@@ -224,6 +269,13 @@ npm run build
 ```
 
 Output: `frontend/dist/`
+
+---
+
+## 📚 Other docs
+
+- **[QUICKSTART.md](QUICKSTART.md)** — Short step-by-step setup guide
+- **[FILES.md](FILES.md)** — Project files manifest and descriptions
 
 ---
 
