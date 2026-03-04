@@ -63,9 +63,9 @@ This project is a **Hostel Grievance Redressal System** for institutions (e.g. J
 
 | Area | Description |
 |------|-------------|
-| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · Provide phone (required) and email (optional) · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
-| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · See student contact details · Secure department-only login · Flag complaints for admin review |
-| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords · See department reports with live red-badge counter · Take action on reports (delete spam/irrelevant complaints or clear report) · View compact history of deleted complaints |
+| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · Provide phone (required) and email (optional) · Basic spam detection on random/vulgar text · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
+| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · See student contact details · Secure department-only login · Flag complaints for admin review · See “possibly/likely spam” badges on suspicious complaints |
+| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords · See department reports with live red-badge counter · Take action on reports (delete spam/irrelevant/resolved complaints or clear report) · View compact history of deleted complaints with final status and reason |
 | **🎨 UI** | Dark/light theme · Snowfall background · Print-optimized (white background, no clutter) · Responsive · Slate/sky themed design |
 
 ---
@@ -254,7 +254,7 @@ Students do not have accounts; complaints are submitted publicly.
 | `make dev` | Start backend + frontend in one terminal |
 | `make backend` | Start only backend (port 5002) |
 | `make frontend` | Start only frontend (Vite) |
-| `make migrate-db` | Run all database migrations (v1–v9) |
+| `make migrate-db` | Run all database migrations (v1–v10) |
 | `make stop-backend` | Stop backend on port 5002 |
 | `make stop-frontend` | Stop Vite dev server (ports 3000–3002) |
 
