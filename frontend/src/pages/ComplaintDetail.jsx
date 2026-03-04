@@ -10,6 +10,7 @@ const ComplaintDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminView = location.pathname.startsWith('/dashboard/admin');
+  const fromReports = !!location.state?.fromReports;
   const { isDark } = useTheme();
   const user = getUser();
   const [complaint, setComplaint] = useState(null);
@@ -25,7 +26,7 @@ const ComplaintDetail = () => {
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportMessage, setReportMessage] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteReason, setDeleteReason] = useState('irrelevant');
+  const [deleteReason, setDeleteReason] = useState('resolved');
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
@@ -153,9 +154,32 @@ const ComplaintDetail = () => {
     if (!complaint) return;
     setDeleteLoading(true);
     try {
-      await api.delete(`/complaints/${complaint.id}`, {
+      const response = await api.delete(`/complaints/${complaint.id}`, {
         data: { reason: deleteReason },
       });
+      // Store minimal history info so AdminDashboard can show it immediately
+      try {
+        const serverHistory = response.data?.history;
+        const historyItem =
+          serverHistory || {
+            id: complaint.id,
+            original_complaint_id: complaint.id,
+            tracking_code: complaint.tracking_code || complaint.id,
+            title: complaint.title,
+            status: complaint.status,
+            category_name: complaint.category_name,
+            hostel_name: complaint.hostel_name,
+            block: complaint.block,
+            room_number: complaint.room_number,
+            created_at: complaint.created_at,
+            resolved_at: complaint.status === 'resolved' ? complaint.updated_at : null,
+            deletion_reason: deleteReason,
+            deleted_at: new Date().toISOString(),
+          };
+        localStorage.setItem('lastDeletedComplaintHistory', JSON.stringify(historyItem));
+      } catch {
+        // ignore localStorage errors
+      }
       setDeleteLoading(false);
       setDeleteOpen(false);
       navigate('/dashboard/admin');
@@ -254,6 +278,17 @@ const ComplaintDetail = () => {
                   <span className="px-2.5 py-1 rounded-full bg-zinc-800/80 text-zinc-200">
                     {complaint.category_name}
                   </span>
+                  {typeof complaint.spam_score === 'number' && complaint.spam_score >= 40 && (
+                    <span
+                      className={`px-2.5 py-1 rounded-full border text-[10px] font-semibold ${
+                        complaint.spam_score >= 70
+                          ? 'border-red-500 bg-red-500/10 text-red-300'
+                          : 'border-amber-500 bg-amber-500/10 text-amber-300'
+                      }`}
+                    >
+                      {complaint.spam_score >= 70 ? 'Likely spam' : 'Possibly spam'}
+                    </span>
+                  )}
                   {complaint.hostel_name && (
                     <span className="px-2.5 py-1 rounded-full bg-zinc-800/80 text-zinc-200">
                       {complaint.hostel_name}
@@ -415,26 +450,41 @@ const ComplaintDetail = () => {
                       <div className="flex gap-2 text-xs">
                         <button
                           type="button"
-                          onClick={() => setDeleteReason('irrelevant')}
+                          onClick={() => setDeleteReason('resolved')}
                           className={`rounded-full px-3 py-1 font-semibold border ${
-                            deleteReason === 'irrelevant'
-                              ? 'border-amber-500 text-amber-300 bg-amber-500/10'
+                            deleteReason === 'resolved'
+                              ? 'border-emerald-500 text-emerald-300 bg-emerald-500/10'
                               : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
                           }`}
                         >
-                          Irrelevant
+                          Resolved (normal)
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteReason('spam')}
-                          className={`rounded-full px-3 py-1 font-semibold border ${
-                            deleteReason === 'spam'
-                              ? 'border-red-500 text-red-300 bg-red-500/10'
-                              : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
-                          }`}
-                        >
-                          Spam
-                        </button>
+                        {(fromReports || (typeof complaint.spam_score === 'number' && complaint.spam_score >= 40)) && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteReason('irrelevant')}
+                              className={`rounded-full px-3 py-1 font-semibold border ${
+                                deleteReason === 'irrelevant'
+                                  ? 'border-amber-500 text-amber-300 bg-amber-500/10'
+                                  : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
+                              }`}
+                            >
+                              Irrelevant
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteReason('spam')}
+                              className={`rounded-full px-3 py-1 font-semibold border ${
+                                deleteReason === 'spam'
+                                  ? 'border-red-500 text-red-300 bg-red-500/10'
+                                  : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
+                              }`}
+                            >
+                              Spam
+                            </button>
+                          </>
+                        )}
                       </div>
                       <button
                         type="button"
