@@ -88,6 +88,8 @@ const PublicComplaint = () => {
     }
     if (!formData.contact_phone.trim()) {
       errors.contact_phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(formData.contact_phone.trim())) {
+      errors.contact_phone = 'Phone number must be 10 digits';
     }
     if (!hostel) {
       errors.hostel = 'Hostel is required';
@@ -364,6 +366,9 @@ const PublicComplaint = () => {
                   onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                   className={`w-full px-4 py-3 ${inputBgClass} border ${inputBorderClass} rounded-lg ${inputTextClass} ${placeholderClass} focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all`}
                   placeholder="Student contact number"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  inputMode="numeric"
                 />
                 {formErrors.contact_phone && (
                   <p className="mt-1 text-sm text-red-500 dark:text-red-400">{formErrors.contact_phone}</p>
