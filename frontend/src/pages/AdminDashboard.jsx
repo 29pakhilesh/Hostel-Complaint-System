@@ -21,6 +21,14 @@ const AdminDashboard = () => {
   const [newSuperPassword, setNewSuperPassword] = useState('');
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
+  const [banner, setBanner] = useState(null); // { type: 'success' | 'error', message: string }
+  const [reports, setReports] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [activeView, setActiveView] = useState('complaints'); // 'complaints' | 'reports' | 'history'
+  const [deleteTarget, setDeleteTarget] = useState(null); // complaint to delete
+  const [deleteReason, setDeleteReason] = useState('irrelevant');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [activeReport, setActiveReport] = useState(null);
   const navigate = useNavigate();
   const user = getUser();
 
@@ -34,6 +42,23 @@ const AdminDashboard = () => {
       fetchDepartments();
     }
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (user?.role !== 'super_admin') return;
+
+    fetchReports();
+    const intervalId = setInterval(fetchReports, 15000);
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (!banner) return;
+    const timer = setTimeout(() => {
+      setBanner(null);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [banner]);
 
   const fetchComplaints = async () => {
     try {
@@ -67,23 +92,21 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleStatusToggle = async (complaintId, currentStatus) => {
-    const nextStatus =
-      currentStatus === 'pending'
-        ? 'inprogress'
-        : currentStatus === 'inprogress'
-        ? 'resolved'
-        : 'pending';
-    setUpdatingId(complaintId);
-
+  const fetchReports = async () => {
     try {
-      await api.put(`/complaints/${complaintId}`, { status: nextStatus });
-      fetchComplaints();
+      const response = await api.get('/complaints/reports/all');
+      setReports(response.data || []);
     } catch (error) {
-      console.error('Error updating complaint:', error);
-      alert(error.response?.data?.error || 'Failed to update complaint');
-    } finally {
-      setUpdatingId(null);
+      console.error('Error fetching complaint reports:', error);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const response = await api.get('/complaints/history');
+      setHistory(response.data);
+    } catch (error) {
+      console.error('Error fetching complaint history:', error);
     }
   };
 
@@ -129,9 +152,57 @@ const AdminDashboard = () => {
   const inputBgClass = isDark ? 'bg-zinc-900 border-zinc-600 text-zinc-100' : 'bg-slate-50 border-slate-300 text-slate-900';
   const dropdownBgClass = isDark ? 'bg-zinc-900 border-zinc-600' : 'bg-white border-slate-200';
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/complaints/${deleteTarget.id}`, {
+        data: { reason: deleteReason },
+      });
+      setComplaints((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+       setReports((prev) => prev.filter((r) => r.complaint_id !== deleteTarget.id));
+      setBanner({
+        type: 'success',
+        message:
+          deleteReason === 'spam'
+            ? 'Complaint deleted as spam.'
+            : 'Complaint deleted as irrelevant.',
+      });
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error('Error deleting complaint:', error);
+      setBanner({
+        type: 'error',
+        message: error.response?.data?.error || 'Failed to delete complaint',
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className={`relative min-h-screen ${bgClass} transition-colors duration-300`}>
       <SnowfallOverlay />
+      {banner && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div
+            className={`mb-4 rounded-xl border px-4 py-2 text-sm flex items-start justify-between gap-3 ${
+              banner.type === 'error'
+                ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'
+                : 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200'
+            }`}
+          >
+            <span>{banner.message}</span>
+            <button
+              type="button"
+              onClick={() => setBanner(null)}
+              className="ml-2 text-xs font-semibold opacity-70 hover:opacity-100"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       <nav className={navBgClass}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -157,9 +228,67 @@ const AdminDashboard = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className={`text-2xl font-bold ${textMain} tracking-tight`}>
+            {activeView === 'complaints'
+              ? 'Complaints Overview'
+              : activeView === 'reports'
+              ? 'Department Reports'
+              : 'Complaint History'}
+          </h2>
+          <div className="inline-flex rounded-full border border-slate-700/60 bg-zinc-900/60 p-0.5">
+            <button
+              type="button"
+              onClick={() => setActiveView('complaints')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
+                activeView === 'complaints'
+                  ? 'bg-sky-500 text-white'
+                  : 'text-slate-300 hover:bg-zinc-800'
+              }`}
+            >
+              Complaints
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveView('reports');
+                fetchReports();
+              }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
+                activeView === 'reports'
+                  ? 'bg-sky-500 text-white'
+                  : 'text-slate-300 hover:bg-zinc-800'
+              }`}
+            >
+              Reports
+              {user?.role === 'super_admin' && reports.length > 0 && (
+                <span className="ml-1 inline-flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {reports.length > 9 ? '9+' : reports.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveView('history');
+                if (!history.length) {
+                  fetchHistory();
+                }
+              }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
+                activeView === 'history'
+                  ? 'bg-sky-500 text-white'
+                  : 'text-slate-300 hover:bg-zinc-800'
+              }`}
+            >
+              History
+            </button>
+          </div>
+        </div>
+
+        {/* Complaints overview & filters (only in Complaints view) */}
+        {activeView === 'complaints' && (
         <div className="mb-8">
-          <h2 className={`text-2xl font-bold mb-6 ${textMain} tracking-tight`}>Complaints Overview</h2>
-          
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} transition-all hover:scale-[1.02]`}>
               <div className={`${textMuted} text-xs font-semibold uppercase tracking-wider mb-1`}>Total</div>
@@ -266,9 +395,16 @@ const AdminDashboard = () => {
                           new_password: newDeptPassword,
                         });
                         setNewDeptPassword('');
-                        alert('Department password updated');
+                        setBanner({
+                          type: 'success',
+                          message: 'Department password updated.',
+                        });
                       } catch (err) {
-                        alert(err.response?.data?.error || 'Failed to update password');
+                        console.error('Update department password error:', err);
+                        setBanner({
+                          type: 'error',
+                          message: err.response?.data?.error || 'Failed to update password',
+                        });
                       }
                     }}
                     className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -308,9 +444,16 @@ const AdminDashboard = () => {
                         });
                         setResetKey('');
                         setNewSuperPassword('');
-                        alert('Super admin password reset');
+                        setBanner({
+                          type: 'success',
+                          message: 'Super admin password reset.',
+                        });
                       } catch (err) {
-                        alert(err.response?.data?.error || 'Failed to reset password');
+                        console.error('Reset super admin password error:', err);
+                        setBanner({
+                          type: 'error',
+                          message: err.response?.data?.error || 'Failed to reset password',
+                        });
                       }
                     }}
                     className="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -322,33 +465,132 @@ const AdminDashboard = () => {
             </div>
           )}
         </div>
+        )}
 
-        {loading ? (
-          <div className={`text-center py-16 ${textMuted}`}>Loading complaints...</div>
-        ) : complaints.length === 0 ? (
-          <div className={`${cardBgClass} rounded-2xl py-16 text-center ${cardBorderClass}`}>
-            <p className={textMuted}>No complaints found.</p>
-          </div>
-        ) : (
-          <div className={`${cardBgClass} rounded-2xl overflow-hidden ${cardBorderClass}`}>
+        {activeView === 'complaints' && (
+          <>
+            {loading ? (
+              <div className={`text-center py-16 ${textMuted}`}>Loading complaints...</div>
+            ) : complaints.length === 0 ? (
+              <div className={`${cardBgClass} rounded-2xl py-16 text-center ${cardBorderClass}`}>
+                <p className={textMuted}>No complaints found.</p>
+              </div>
+            ) : (
+              <div className={`${cardBgClass} rounded-2xl overflow-hidden ${cardBorderClass}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={isDark ? 'bg-zinc-800/80' : 'bg-slate-100/80'}>
+                      <tr>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Complaint ID
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Title
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Category
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Student
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Status
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Created
+                        </th>
+                        <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className={isDark ? 'divide-y divide-zinc-700/50' : 'divide-y divide-slate-200'}>
+                      {complaints.map((complaint) => (
+                        <tr
+                          key={complaint.id}
+                          className={`${isDark ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50/80'} transition-colors cursor-pointer`}
+                          onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`text-sm font-mono font-medium ${textMain}`}>{complaint.tracking_code || complaint.id}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className={`text-sm font-medium ${textMain}`}>{complaint.title}</div>
+                            <div className={`text-sm mt-1 ${textMuted} line-clamp-2`}>{complaint.description}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`text-sm ${textMuted}`}>{complaint.category_name}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm ${textMain}`}>{complaint.user_name || 'N/A'}</div>
+                            <div className={`text-xs ${textMuted}`}>
+                              {complaint.contact_phone && (
+                                <a href={`tel:${complaint.contact_phone}`} className="hover:underline">
+                                  {complaint.contact_phone}
+                                </a>
+                              )}
+                              {complaint.contact_email && (
+                                <>
+                                  <span className="mx-1 text-slate-500">·</span>
+                                  <a href={`mailto:${complaint.contact_email}`} className="hover:underline">
+                                    {complaint.contact_email}
+                                  </a>
+                                </>
+                              )}
+                              {!complaint.contact_phone && !complaint.contact_email && complaint.user_email && (
+                                <span>{complaint.user_email}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={getStatusBadge(complaint.status)}>
+                              {complaint.status}
+                            </span>
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMuted}`}>
+                            {formatDate(complaint.created_at)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
+                              className="px-4 py-2 rounded-xl text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-all"
+                            >
+                              View details
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeView === 'reports' && (
+          <div className={`${cardBgClass} rounded-2xl overflow-hidden ${cardBorderClass} mt-6`}>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className={isDark ? 'bg-zinc-800/80' : 'bg-slate-100/80'}>
                   <tr>
                     <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Reported On
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Complaint ID
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Title
                     </th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
-                      Category
+                      Department
                     </th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
-                      Student
+                      Reason
                     </th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
-                      Status
-                    </th>
-                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
-                      Created
+                      Contact
                     </th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
                       Actions
@@ -356,60 +598,272 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className={isDark ? 'divide-y divide-zinc-700/50' : 'divide-y divide-slate-200'}>
-                  {complaints.map((complaint) => (
-                    <tr
-                      key={complaint.id}
-                      className={`${isDark ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50/80'} transition-colors cursor-pointer`}
-                      onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
-                    >
-                      <td className="px-6 py-4">
-                        <div className={`text-sm font-medium ${textMain}`}>{complaint.title}</div>
-                        <div className={`text-sm mt-1 ${textMuted} line-clamp-2`}>{complaint.description}</div>
+                  {reports.map((report) => (
+                    <tr key={report.id} className={isDark ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50/80'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        {new Date(report.created_at).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm ${textMuted}`}>{complaint.category_name}</span>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-100">
+                        {report.tracking_code || report.complaint_id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`text-sm ${textMain}`}>{complaint.user_name || 'N/A'}</div>
-                        <div className={`text-xs ${textMuted}`}>{complaint.user_email || ''}</div>
+                      <td className="px-6 py-4 text-sm text-slate-100">
+                        {report.title}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={getStatusBadge(complaint.status)}>
-                          {complaint.status}
-                        </span>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                        {report.category_name}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMuted}`}>
-                        {formatDate(complaint.created_at)}
+                      <td className="px-6 py-4 text-sm text-slate-300 max-w-md">
+                        {report.reason}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-300">
+                        {report.contact_phone && (
+                          <div>
+                            <a href={`tel:${report.contact_phone}`} className="hover:underline">
+                              {report.contact_phone}
+                            </a>
+                          </div>
+                        )}
+                        {report.contact_email && (
+                          <div>
+                            <a href={`mailto:${report.contact_email}`} className="hover:underline">
+                              {report.contact_email}
+                            </a>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
-                          onClick={() => navigate(`/dashboard/admin/complaints/${complaint.id}`)}
-                          className="px-4 py-2 rounded-xl text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-all"
+                          type="button"
+                          onClick={() => navigate(`/dashboard/admin/complaints/${report.complaint_id}`)}
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-all"
                         >
-                          View details
+                          View complaint
                         </button>
                         <button
-                          onClick={() => handleStatusToggle(complaint.id, complaint.status)}
-                          disabled={updatingId === complaint.id}
-                          className={`ml-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                            complaint.status === 'pending'
-                              ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
-                              : 'bg-amber-500 hover:bg-amber-400 text-white'
-                          }`}
+                          type="button"
+                          onClick={() => setActiveReport(report)}
+                          className="ml-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-white transition-all"
                         >
-                          {updatingId === complaint.id
-                            ? 'Updating...'
-                            : complaint.status === 'pending'
-                            ? 'Mark in progress'
-                            : complaint.status === 'inprogress'
-                            ? 'Mark resolved'
-                            : 'Mark pending'}
+                          Take action
                         </button>
                       </td>
                     </tr>
                   ))}
+                  {reports.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-6 py-8 text-center text-sm text-slate-400"
+                      >
+                        No reports from departments yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+        {activeReport && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+            <div
+              className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${
+                isDark ? 'bg-zinc-900 border border-zinc-700' : 'bg-white border border-slate-200'
+              }`}
+            >
+              <h3 className={`text-lg font-semibold mb-2 ${textMain}`}>Take action on report</h3>
+              <p className={`text-sm mb-4 ${textMuted}`}>
+                Choose how you want to handle this reported complaint. You can delete the complaint entirely or
+                mark this report as reviewed and keep the complaint.
+              </p>
+              <div className="mb-4 rounded-xl bg-zinc-900/40 px-3 py-2 text-xs text-zinc-200">
+                <div className="font-mono">
+                  ID: {activeReport.tracking_code || activeReport.complaint_id}
+                </div>
+                <div className="mt-1 line-clamp-2">{activeReport.title}</div>
+                <div className="mt-1 text-[11px] text-zinc-300">
+                  Dept: {activeReport.category_name} · Reported reason: {activeReport.reason}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteTarget({
+                      id: activeReport.complaint_id,
+                      tracking_code: activeReport.tracking_code || activeReport.complaint_id,
+                      title: activeReport.title,
+                    });
+                    setDeleteReason('irrelevant');
+                    setActiveReport(null);
+                  }}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold bg-red-600 hover:bg-red-500 text-white transition-all"
+                >
+                  Delete complaint (spam / irrelevant)
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await api.delete(`/complaints/reports/${activeReport.id}`);
+                      setReports((prev) => prev.filter((r) => r.id !== activeReport.id));
+                      setBanner({
+                        type: 'success',
+                        message: 'Report marked as reviewed.',
+                      });
+                    } catch (error) {
+                      console.error('Error clearing report:', error);
+                      setBanner({
+                        type: 'error',
+                        message: error.response?.data?.error || 'Failed to clear report',
+                      });
+                    } finally {
+                      setActiveReport(null);
+                    }
+                  }}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all"
+                >
+                  Keep complaint, clear report
+                </button>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setActiveReport(null)}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold border border-zinc-600 text-zinc-200 hover:bg-zinc-800/70 transition-all mt-2"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {activeView === 'history' && (
+          <div className={`${cardBgClass} rounded-2xl overflow-hidden ${cardBorderClass} mt-6`}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className={isDark ? 'bg-zinc-800/80' : 'bg-slate-100/80'}>
+                  <tr>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Deleted At
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Complaint ID
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Title
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Department / Category
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Final Status
+                    </th>
+                    <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${textMuted}`}>
+                      Reason
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className={isDark ? 'divide-y divide-zinc-700/50' : 'divide-y divide-slate-200'}>
+                  {history.map((item) => (
+                    <tr key={item.id} className={isDark ? 'hover:bg-zinc-800/50' : 'hover:bg-slate-50/80'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        {item.deleted_at ? new Date(item.deleted_at).toLocaleString() : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
+                        {item.tracking_code || item.original_complaint_id}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {item.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.category_name || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.status || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">
+                        {item.deletion_reason || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                  {history.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-8 text-center text-sm text-slate-400"
+                      >
+                        No deleted complaints recorded yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {deleteTarget && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+            <div
+              className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${
+                isDark ? 'bg-zinc-900 border border-zinc-700' : 'bg-white border border-slate-200'
+              }`}
+            >
+              <h3 className={`text-lg font-semibold mb-2 ${textMain}`}>Delete complaint</h3>
+              <p className={`text-sm mb-4 ${textMuted}`}>
+                You are about to permanently delete this complaint. This action cannot be undone.
+              </p>
+              <div className="mb-4 rounded-xl bg-zinc-900/40 px-3 py-2 text-xs text-zinc-200">
+                <div className="font-mono">
+                  ID: {deleteTarget.tracking_code || deleteTarget.id}
+                </div>
+                <div className="mt-1 line-clamp-2">{deleteTarget.title}</div>
+              </div>
+              <div className="mb-4">
+                <p className={`text-sm font-medium mb-2 ${textMain}`}>Select a reason:</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteReason('irrelevant')}
+                    className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold border transition-all ${
+                      deleteReason === 'irrelevant'
+                        ? 'border-amber-500 bg-amber-500/10 text-amber-300'
+                        : 'border-zinc-600 text-zinc-200 hover:bg-zinc-800/70'
+                    }`}
+                  >
+                    Irrelevant
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteReason('spam')}
+                    className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold border transition-all ${
+                      deleteReason === 'spam'
+                        ? 'border-red-500 bg-red-500/10 text-red-300'
+                        : 'border-zinc-600 text-zinc-200 hover:bg-zinc-800/70'
+                    }`}
+                  >
+                    Spam
+                  </button>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold border border-zinc-600 text-zinc-200 hover:bg-zinc-800/70 transition-all"
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={deleteLoading}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold bg-red-600 hover:bg-red-500 text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                >
+                  {deleteLoading ? 'Deleting…' : 'Delete complaint'}
+                </button>
+              </div>
             </div>
           </div>
         )}
