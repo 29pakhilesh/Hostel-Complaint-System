@@ -28,6 +28,117 @@ const upload = multer({
 const generateTrackingCode = () =>
   String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
 
+const computeSpamScore = (title, description, contactPhone, contactEmail) => {
+  const text = `${title || ''} ${description || ''}`.toLowerCase();
+  const desc = (description || '').trim();
+  const titleText = (title || '').trim();
+  let score = 0;
+
+  // Very short description
+  if (!description || description.trim().length < 25) {
+    score += 25;
+  }
+
+  // Very short, single-phrase description/title (often random text)
+  const descWords = desc ? desc.split(/\s+/).filter(Boolean) : [];
+  if (desc && descWords.length <= 3 && desc.length < 40) {
+    score += 20;
+  }
+  const titleWords = titleText ? titleText.split(/\s+/).filter(Boolean) : [];
+  if (titleText && titleWords.length <= 3 && titleText.length < 30) {
+    score += 10;
+  }
+
+  // Links / promotions
+  const urlRegex = /(https?:\/\/|www\.)/gi;
+  if (urlRegex.test(text)) {
+    score += 35;
+  }
+
+  const spamPhrases = [
+    'win money',
+    'lottery',
+    'click here',
+    'offer',
+    'discount',
+    'limited time',
+    'free gift',
+    'subscribe',
+    'follow me',
+  ];
+  if (spamPhrases.some((p) => text.includes(p))) {
+    score += 25;
+  }
+
+  // Vulgar / abusive language (basic English + Hindi / Hinglish list)
+  const vulgarWords = [
+    // English
+    'fuck',
+    'f***',
+    'shit',
+    'bitch',
+    'bastard',
+    'asshole',
+    'dick',
+    'slut',
+    // Common Hindi / Hinglish abusive terms (Latin)
+    'chutiya',
+    'chutiye',
+    'madarchod',
+    'bhosdike',
+    'bsdk',
+    'gaand',
+    'randi',
+    'bhenchod',
+    // Devanagari variants (very limited sample)
+    'चूतिया',
+    'चुतिया',
+    'मादरचोद',
+    'बहनचोद',
+    'गांड',
+    'रंडी',
+  ];
+  if (vulgarWords.some((w) => text.includes(w))) {
+    score += 40;
+  }
+
+  // Random-looking alphanumeric token with no spaces
+  const compact = text.replace(/\s+/g, '');
+  if (
+    compact.length >= 5 &&
+    compact.length <= 20 &&
+    /[a-z]/.test(compact) &&
+    /\d/.test(compact)
+  ) {
+    score += 15;
+  }
+
+  // Long repeated characters (e.g. heyyyyy)
+  if (/(.)\1{4,}/.test(text)) {
+    score += 10;
+  }
+
+  // Low diversity text (many repeated words)
+  const words = description ? description.toLowerCase().split(/\s+/).filter(Boolean) : [];
+  if (words.length > 0) {
+    const uniqueWords = new Set(words);
+    const ratio = uniqueWords.size / words.length;
+    if (ratio < 0.5) {
+      score += 10;
+    }
+  }
+
+  // Suspicious meta info
+  const meta = `${contactPhone || ''} ${contactEmail || ''}`.toLowerCase();
+  if (/(promo|marketing|business)/.test(meta)) {
+    score += 10;
+  }
+
+  if (score > 100) score = 100;
+  if (score < 0) score = 0;
+  return score;
+};
+
 const deleteComplaintFiles = async (imagePaths) => {
   if (!imagePaths) return;
 
@@ -143,6 +254,7 @@ router.get('/', authenticateToken, async (req, res) => {
           c.image_paths,
           c.contact_phone,
           c.contact_email,
+          c.spam_score,
           cat.name as category_name,
           cat.id as category_id
         FROM complaints c
@@ -171,6 +283,7 @@ router.get('/', authenticateToken, async (req, res) => {
             c.image_paths,
             c.contact_phone,
             c.contact_email,
+            c.spam_score,
             cat.name as category_name,
             cat.id as category_id
           FROM complaints c
@@ -195,6 +308,7 @@ router.get('/', authenticateToken, async (req, res) => {
             c.image_paths,
             c.contact_phone,
             c.contact_email,
+            c.spam_score,
             cat.name as category_name,
             cat.id as category_id
           FROM complaints c
@@ -235,6 +349,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         c.image_paths,
         c.contact_phone,
         c.contact_email,
+        c.spam_score,
         cat.name as category_name,
         cat.id as category_id
       FROM complaints c
@@ -296,6 +411,13 @@ router.post('/', upload.array('images', 3), async (req, res) => {
       });
     }
 
+    const phone = contact_phone.trim();
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return res.status(400).json({
+        error: 'Phone number must be exactly 10 digits',
+      });
+    }
+
     // Validate category exists
     const categoryCheck = await pool.query(
       'SELECT id FROM categories WHERE id = $1',
@@ -312,6 +434,8 @@ router.post('/', upload.array('images', 3), async (req, res) => {
     // Generate a short public tracking code
     const trackingCode = generateTrackingCode();
 
+    const spamScore = computeSpamScore(title, description, contact_phone, contact_email);
+
     // Insert complaint without user_id (public submission)
     const result = await pool.query(
       `INSERT INTO complaints (
@@ -325,10 +449,11 @@ router.post('/', upload.array('images', 3), async (req, res) => {
          image_paths,
          contact_phone,
          contact_email,
-         tracking_code
+         tracking_code,
+         spam_score
        )
-       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths, contact_phone, contact_email, tracking_code`,
+       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths, contact_phone, contact_email, tracking_code, spam_score`,
       [
         title.trim(),
         description.trim(),
@@ -337,9 +462,10 @@ router.post('/', upload.array('images', 3), async (req, res) => {
         block?.trim() || null,
         room_number?.trim() || null,
         imagePaths.length > 0 ? imagePaths : null,
-        contact_phone.trim(),
+        phone,
         contact_email?.trim() || null,
         trackingCode,
+        spamScore,
       ]
     );
 
@@ -482,11 +608,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { reason } = req.body || {};
 
-  const allowedReasons = ['irrelevant', 'spam'];
+  const allowedReasons = ['irrelevant', 'spam', 'resolved'];
 
   if (!reason || !allowedReasons.includes(reason)) {
     return res.status(400).json({
-      error: 'Reason is required and must be either "irrelevant" or "spam"',
+      error: 'Reason is required and must be one of "resolved", "irrelevant", or "spam"',
     });
   }
 
@@ -514,7 +640,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     const complaint = complaintResult.rows[0];
 
-    await client.query(
+    const historyInsert = await client.query(
       `
       INSERT INTO complaint_history (
         original_complaint_id,
@@ -531,6 +657,20 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         deletion_reason
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING
+        id,
+        original_complaint_id,
+        tracking_code,
+        title,
+        status,
+        category_name,
+        hostel_name,
+        block,
+        room_number,
+        created_at,
+        resolved_at,
+        deletion_reason,
+        deleted_at
       `,
       [
         complaint.id,
@@ -563,6 +703,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         tracking_code: complaint.tracking_code,
         title: complaint.title,
       },
+      history: historyInsert.rows[0],
     });
   } catch (error) {
     await client.query('ROLLBACK');
