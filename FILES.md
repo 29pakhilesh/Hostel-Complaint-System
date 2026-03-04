@@ -27,7 +27,7 @@ All files have been successfully created and saved to your workspace.
 - `middleware/auth.js` - JWT authentication & role-based middleware
 
 ### Database
-- `migrations/migrate.js`   - Base schema migration (users, categories, complaints)
+- `migrations/migrate.js`    - Base schema migration (users, categories, complaints)
 - `migrations/migrate-v2.js` - Add `department` role and per-category department users
 - `migrations/migrate-v3.js` - Add hostel/block/room and image paths to complaints
 - `migrations/migrate-v4.js` - Add `inprogress` complaint status
@@ -36,6 +36,7 @@ All files have been successfully created and saved to your workspace.
 - `migrations/migrate-v7.js` - Add `contact_phone` and `contact_email` columns on complaints
 - `migrations/migrate-v8.js` - Create `complaint_reports` table (department reports to admin)
 - `migrations/migrate-v9.js` - Create `complaint_history` table (compact record of deleted complaints)
+- `migrations/migrate-v10.js` - Add `spam_score` column for basic spam/abuse detection
 
 ### Other
 - `uploads/` - Stored complaint image files created at runtime (cleaned up when complaints are deleted)
