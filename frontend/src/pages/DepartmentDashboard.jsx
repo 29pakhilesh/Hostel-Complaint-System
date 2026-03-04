@@ -10,6 +10,7 @@ const DepartmentDashboard = () => {
   const { isDark } = useTheme();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const user = getUser();
 
@@ -32,9 +33,10 @@ const DepartmentDashboard = () => {
     try {
       await api.put(`/complaints/${complaintId}`, { status: newStatus });
       fetchComplaints(); // Refresh the list
+      setError('');
     } catch (error) {
       console.error('Error updating complaint:', error);
-      alert('Failed to update complaint status');
+      setError(error.response?.data?.error || 'Failed to update complaint status');
     }
   };
 
@@ -122,6 +124,11 @@ const DepartmentDashboard = () => {
       </nav>
 
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up-slow">
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200 px-4 py-2 text-sm">
+            {error}
+          </div>
+        )}
         <div className="mb-6 flex items-baseline justify-between gap-4">
           <h2 className={`text-2xl font-bold ${textClass} transition-colors duration-300`} style={textShadowStyle}>Complaints</h2>
           <p className={`${textMutedClass} mt-1`}>Manage complaints for your department</p>
@@ -140,16 +147,13 @@ const DepartmentDashboard = () => {
                 <thead className={tableHeaderBgClass}>
                   <tr>
                     <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                      Complaint ID
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                       Title
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                      Description
-                    </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                       Location
-                    </th>
-                    <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                      Images
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-semibold ${textClass} uppercase tracking-wider border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                       Status
@@ -169,11 +173,11 @@ const DepartmentDashboard = () => {
                       className={`${tableRowHoverClass} transition-colors align-top cursor-pointer`}
                       onClick={() => navigate(`/dashboard/department/complaints/${complaint.id}`)}
                     >
-                      <td className="px-6 py-4">
-                        <div className={`text-sm font-medium ${textClass}`}>{complaint.title}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-mono font-medium ${textClass}`}>{complaint.tracking_code || complaint.id}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className={`text-sm ${textMutedClass} max-w-md`}>{complaint.description}</div>
+                        <div className={`text-sm font-medium ${textClass}`}>{complaint.title}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <div className={`${textMutedClass}`}>
@@ -191,29 +195,7 @@ const DepartmentDashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {Array.isArray(complaint.image_paths) && complaint.image_paths.length > 0 ? (
-                          <div className="flex gap-2">
-                            {complaint.image_paths.slice(0, 3).map((src, idx) => (
-                              <a
-                                key={idx}
-                                href={src}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="block h-12 w-12 rounded-md overflow-hidden border border-zinc-700 hover:border-sky-400 transition-colors"
-                              >
-                                <img
-                                  src={src}
-                                  alt={`Attachment ${idx + 1}`}
-                                  className="h-full w-full object-cover"
-                                />
-                              </a>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className={`text-xs ${textMutedClass}`}>No images</span>
-                        )}
-                      </td>
+                      {/* Images and contact moved to detail view to keep dashboard minimal */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={getStatusBadge(complaint.status)}>
                           {complaint.status}

@@ -14,6 +14,8 @@ const PublicComplaint = () => {
     title: '',
     description: '',
     category_id: '',
+    contact_phone: '',
+    contact_email: '',
   });
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -84,6 +86,9 @@ const PublicComplaint = () => {
     if (!formData.category_id) {
       errors.category_id = 'Category is required';
     }
+    if (!formData.contact_phone.trim()) {
+      errors.contact_phone = 'Phone number is required';
+    }
     if (!hostel) {
       errors.hostel = 'Hostel is required';
     }
@@ -111,6 +116,8 @@ const PublicComplaint = () => {
       form.append('description', formData.description);
       form.append('category_id', formData.category_id);
       form.append('hostel_name', hostel);
+      form.append('contact_phone', formData.contact_phone);
+      if (formData.contact_email) form.append('contact_email', formData.contact_email);
       if (block) form.append('block', block);
       if (roomNumber) form.append('room_number', roomNumber);
       images.forEach((file) => {
@@ -347,6 +354,36 @@ const PublicComplaint = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-2 transition-colors duration-300`}>
+                  Phone number <span className={isDark ? 'text-sky-400' : 'text-rose-500'}>*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={formData.contact_phone}
+                  onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${inputBorderClass} rounded-lg ${inputTextClass} ${placeholderClass} focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all`}
+                  placeholder="Student contact number"
+                />
+                {formErrors.contact_phone && (
+                  <p className="mt-1 text-sm text-red-500 dark:text-red-400">{formErrors.contact_phone}</p>
+                )}
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-2 transition-colors duration-300`}>
+                  Email (optional)
+                </label>
+                <input
+                  type="email"
+                  value={formData.contact_email}
+                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${inputBorderClass} rounded-lg ${inputTextClass} ${placeholderClass} focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all`}
+                  placeholder="Student email address"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div>
                 <label className={`block text-sm font-medium ${textClass} mb-2 transition-colors duration-300`}>
                   Hostel <span className={isDark ? 'text-sky-400' : 'text-rose-500'}>*</span>

@@ -15,6 +15,7 @@ const StudentDashboard = () => {
     category_id: '',
   });
   const [formErrors, setFormErrors] = useState({});
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const navigate = useNavigate();
   const user = getUser();
 
@@ -146,22 +147,51 @@ const StudentDashboard = () => {
                 )}
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Category
                 </label>
-                <select
-                  value={formData.category_id}
-                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button
+                  type="button"
+                  onClick={() => setCategoryOpen((open) => !open)}
+                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-left text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                  <span>
+                    {formData.category_id
+                      ? categories.find((c) => c.id === formData.category_id)?.name || 'Select a category'
+                      : 'Select a category'}
+                  </span>
+                  <span className="text-slate-400 text-xs">{categoryOpen ? '▲' : '▼'}</span>
+                </button>
+                {categoryOpen && (
+                  <div className="absolute z-20 mt-1 w-full rounded-lg bg-slate-800 border border-slate-600 shadow-xl max-h-56 overflow-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, category_id: '' });
+                        setCategoryOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+                    >
+                      Select a category
+                    </button>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, category_id: cat.id });
+                          setCategoryOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-700 ${
+                          formData.category_id === cat.id ? 'bg-slate-700 text-sky-300' : 'text-slate-100'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {formErrors.category_id && (
                   <p className="mt-1 text-sm text-red-400">{formErrors.category_id}</p>
                 )}

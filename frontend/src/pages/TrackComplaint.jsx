@@ -90,10 +90,12 @@ const TrackComplaint = () => {
     <div className={`relative min-h-screen ${bgClass} py-10 px-4 sm:px-6 lg:px-8 print:min-h-0 print:py-0 print:px-0 print-status-page`}>
       <SnowfallOverlay />
       <div className="print-status-page-inner max-w-4xl mx-auto print:mx-0">
-        {/* Print-only: JUIT logo header */}
-        <div className="hidden print:flex print:items-center print:gap-2 print:pb-2 print:mb-2 print:border-b print:border-slate-300 print:flex-shrink-0">
-          <img src={JUIT_LOGO_SRC} alt="JUIT" className="print:h-8 print:w-8 print:object-contain" />
-          <span className="print:text-xs print:font-semibold print:text-black">Jaypee University of Information Technology</span>
+        {/* Print-only: professional header */}
+        <div className="print-status-header print:items-center print:gap-2">
+          <img src={JUIT_LOGO_SRC} alt="JUIT" />
+          <div>
+            <span className="print-status-title">Jaypee University of Information Technology</span>
+          </div>
         </div>
         {/* Hide in print: back link, form, buttons */}
         <div className="print:hidden mb-6 flex items-center justify-between gap-4 flex-wrap">
@@ -173,9 +175,9 @@ const TrackComplaint = () => {
           )}
 
           {complaint && (
-            <div className="print-status-body space-y-6 print:space-y-0">
-              {/* Left column in print: icon, ID, steps, details */}
-              <div className="print-col-left space-y-6 print:space-y-0">
+            <div className="print-status-body space-y-6 print:space-y-0 print:flex print:flex-row print:items-start print:gap-6">
+              {/* Left column: big status icon, ID, steps, details */}
+              <div className="print-col-left space-y-6 print:space-y-2 print:flex-1">
               {/* Big status icon: resolved (tick), rejected (cross), inprogress (spinner), pending (clock) */}
               {complaint.status === 'resolved' && (
                 <div className="flex flex-col items-center justify-center py-6 print:py-1 print:flex-row print:gap-2 print:justify-start">
@@ -262,15 +264,16 @@ const TrackComplaint = () => {
                 </div>
               )}
               <section className="space-y-2 print:space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 print:text-[10px]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 print-section-label">
                 Complaint ID
                 </p>
-                <p className={`font-mono text-sm break-all ${textClass} print:text-[10px]`}>
+                <p className={`font-mono text-sm break-all ${textClass} print:text-[9pt]`}>
                   {complaint.tracking_code || complaint.id}
                 </p>
               </section>
 
-              <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-2 print:gap-1">
+              {/* Status timeline: show only on screen, hide in PDF for a cleaner layout */}
+              <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
                 <div
                   className={`rounded-xl border px-4 py-3 text-xs sm:text-sm print:px-2 print:py-1 print:text-[10px] ${statusStepClasses(
                     complaint.status,
@@ -350,9 +353,7 @@ const TrackComplaint = () => {
                 </div>
               </section>
 
-              </div>
-              {/* Right column in print: description, images */}
-              <div className="print-col-right space-y-6 print:space-y-0">
+              {/* Description: inside left column so it fills space beside attachments in print */}
               <section className="space-y-1 print:space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 print:text-xs">
                   Description
@@ -362,16 +363,20 @@ const TrackComplaint = () => {
                 </p>
               </section>
 
+              </div>
+
+              {/* Right column in print: attachments only, aligned to right side of card */}
+              <div className="print-col-right space-y-6 print:space-y-2 print:w-[38%] print:flex-shrink-0">
               {images.length > 0 && (
                 <section className="space-y-2 print:space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 print:text-xs">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 print:text-[10px]">
                     Attachments
                   </p>
                   <div className="grid gap-3 sm:grid-cols-3 print:grid-cols-1 print:gap-1">
                     {images.map((src, idx) => (
                       <div
                         key={idx}
-                        className="overflow-hidden rounded-lg border border-slate-700 bg-black/40 print:border-slate-300"
+                        className="overflow-hidden rounded-lg border border-slate-700 bg-black/40 print:bg-white print:border-slate-300"
                       >
                         <img
                           src={src}

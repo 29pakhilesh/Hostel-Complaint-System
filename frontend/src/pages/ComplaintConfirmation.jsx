@@ -169,84 +169,64 @@ const ComplaintConfirmation = () => {
         </div>
       </div>
 
-      {/* Print-only layout: JUIT logo + big tick + essential details, single page */}
+      {/* Print-only: landscape A4, single page, professional layout */}
       {!loading && !error && complaint && (
-        <div className="hidden print:block print-confirmation-page bg-white text-black" style={{ maxHeight: '277mm', overflow: 'hidden' }}>
-          <div className="max-w-3xl mx-auto">
-            {/* JUIT logo header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #e5e7eb' }}>
-              <img src={JUIT_LOGO_SRC} alt="JUIT" style={{ height: '28px', width: '28px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#111827' }}>Jaypee University of Information Technology</span>
-            </div>
-            <div className="flex flex-col items-center text-center mb-6">
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '9999px',
-                  border: '3px solid #16a34a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '8px',
-                }}
-              >
-                <span style={{ fontSize: '32px', color: '#16a34a' }}>✓</span>
+        <div className="print-confirmation-page bg-white text-black">
+          <div className="print-confirmation-inner">
+            {/* Header */}
+            <div className="print-confirmation-header">
+              <img src={JUIT_LOGO_SRC} alt="JUIT" />
+              <div>
+                <span className="print-confirmation-org">Jaypee University of Information Technology</span>
               </div>
-              <h1 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '2px' }}>
-                Complaint Registered Successfully
-              </h1>
-              <p style={{ fontSize: '12px', color: '#4b5563' }}>
-                Please keep this confirmation sheet for your records.
-              </p>
             </div>
 
-            <div style={{ fontSize: '12px', lineHeight: 1.5 }}>
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Complaint ID
-              </p>
-              <p
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '12px',
-                  marginBottom: '10px',
-                  wordBreak: 'break-all',
-                }}
-              >
-                {complaint.tracking_code || complaint.id}
-              </p>
-
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Title
-              </p>
-              <p style={{ marginBottom: '8px' }}>{complaint.title}</p>
-
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Department
-              </p>
-              <p style={{ marginBottom: '8px' }}>{complaint.category_name}</p>
-
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Hostel / Room
-              </p>
-              <p style={{ marginBottom: '8px' }}>
-                {complaint.hostel_name || 'Not specified'}
-                {complaint.block ? `, Block ${complaint.block}` : ''}
-                {complaint.room_number ? `, Room ${complaint.room_number}` : ''}
-              </p>
-
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Submitted on
-              </p>
-              <p style={{ marginBottom: '10px' }}>
-                {new Date(complaint.created_at).toLocaleString()}
-              </p>
-
-              <p style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '10px', color: '#6b7280' }}>
-                Description
-              </p>
-              <p style={{ marginBottom: 0 }}>{complaint.description}</p>
+            {/* Success block */}
+            <div className="print-confirmation-success">
+              <div className="print-confirmation-tick">✓</div>
+              <h1 className="print-confirmation-title">Complaint Registered Successfully</h1>
+              <p className="print-confirmation-note">Keep this sheet for your records. Use the Complaint ID on the tracking page to check status.</p>
             </div>
+
+            {/* Details in a simple stacked layout */}
+            <div className="print-confirmation-details">
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Complaint ID</span>
+                <span className="print-confirmation-id">
+                  {complaint.tracking_code || complaint.id}
+                </span>
+              </div>
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Title</span>
+                <p className="print-confirmation-value">{complaint.title}</p>
+              </div>
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Department</span>
+                <p className="print-confirmation-value">{complaint.category_name}</p>
+              </div>
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Hostel / Room</span>
+                <p className="print-confirmation-value">
+                  {complaint.hostel_name || '—'}
+                  {complaint.block ? `, Block ${complaint.block}` : ''}
+                  {complaint.room_number ? `, Room ${complaint.room_number}` : ''}
+                </p>
+              </div>
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Submitted on</span>
+                <p className="print-confirmation-value">
+                  {new Date(complaint.created_at).toLocaleString()}
+                </p>
+              </div>
+              <div className="print-confirmation-row">
+                <span className="print-confirmation-label">Description</span>
+                <p className="print-confirmation-value">
+                  {complaint.description}
+                </p>
+              </div>
+            </div>
+
+            <div className="print-confirmation-footer">JUIT Hostel Complaint System — For official use</div>
           </div>
         </div>
       )}
