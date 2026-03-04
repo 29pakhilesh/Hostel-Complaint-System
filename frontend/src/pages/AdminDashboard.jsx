@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const [history, setHistory] = useState([]);
   const [activeView, setActiveView] = useState('complaints'); // 'complaints' | 'reports' | 'history'
   const [deleteTarget, setDeleteTarget] = useState(null); // complaint to delete
-  const [deleteReason, setDeleteReason] = useState('irrelevant');
+  const [deleteReason, setDeleteReason] = useState('resolved');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [activeReport, setActiveReport] = useState(null);
   const navigate = useNavigate();
@@ -51,6 +51,24 @@ const AdminDashboard = () => {
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.role]);
+
+  useEffect(() => {
+    // Pull in any history item left by ComplaintDetail deletes
+    try {
+      const raw = localStorage.getItem('lastDeletedComplaintHistory');
+      if (raw) {
+        const item = JSON.parse(raw);
+        setHistory((prev) => {
+          // avoid duplicates by id
+          if (prev.some((h) => h.id === item.id)) return prev;
+          return [item, ...prev];
+        });
+        localStorage.removeItem('lastDeletedComplaintHistory');
+      }
+    } catch {
+      // ignore parse/storage errors
+    }
+  }, []);
 
   useEffect(() => {
     if (!banner) return;
@@ -133,6 +151,22 @@ const AdminDashboard = () => {
     return `${baseClasses} bg-amber-500/10 text-amber-300 border border-amber-500/80`;
   };
 
+  const getSpamLabel = (spamScore) => {
+    if (spamScore == null || spamScore < 40) return null;
+    if (spamScore >= 70) {
+      return (
+        <span className="ml-2 inline-flex items-center rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/70">
+          Likely spam
+        </span>
+      );
+    }
+    return (
+      <span className="ml-2 inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-500/70">
+        Possibly spam
+      </span>
+    );
+  };
+
   const stats = {
     total: complaints.length,
     pending: complaints.filter(c => c.status === 'pending').length,
@@ -156,11 +190,33 @@ const AdminDashboard = () => {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      await api.delete(`/complaints/${deleteTarget.id}`, {
+      const response = await api.delete(`/complaints/${deleteTarget.id}`, {
         data: { reason: deleteReason },
       });
       setComplaints((prev) => prev.filter((c) => c.id !== deleteTarget.id));
-       setReports((prev) => prev.filter((r) => r.complaint_id !== deleteTarget.id));
+      setReports((prev) => prev.filter((r) => r.complaint_id !== deleteTarget.id));
+      if (user?.role === 'super_admin') {
+        let historyItem = response.data?.history;
+        if (!historyItem) {
+          // Fallback: create a minimal local history record so the UI always shows something
+          historyItem = {
+            id: deleteTarget.id,
+            original_complaint_id: deleteTarget.id,
+            tracking_code: deleteTarget.tracking_code || deleteTarget.id,
+            title: deleteTarget.title,
+            status: 'resolved',
+            category_name: '—',
+            hostel_name: null,
+            block: null,
+            room_number: null,
+            created_at: null,
+            resolved_at: null,
+            deletion_reason: deleteReason,
+            deleted_at: new Date().toISOString(),
+          };
+        }
+        setHistory((prev) => [historyItem, ...prev]);
+      }
       setBanner({
         type: 'success',
         message:
@@ -543,9 +599,12 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={getStatusBadge(complaint.status)}>
-                              {complaint.status}
-                            </span>
+                            <div className="flex items-center">
+                              <span className={getStatusBadge(complaint.status)}>
+                                {complaint.status}
+                              </span>
+                              {getSpamLabel(complaint.spam_score)}
+                            </div>
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${textMuted}`}>
                             {formatDate(complaint.created_at)}
@@ -634,7 +693,11 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
                           type="button"
-                          onClick={() => navigate(`/dashboard/admin/complaints/${report.complaint_id}`)}
+                          onClick={() =>
+                            navigate(`/dashboard/admin/complaints/${report.complaint_id}`, {
+                              state: { fromReports: true },
+                            })
+                          }
                           className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white transition-all"
                         >
                           View complaint
@@ -822,6 +885,17 @@ const AdminDashboard = () => {
               <div className="mb-4">
                 <p className={`text-sm font-medium mb-2 ${textMain}`}>Select a reason:</p>
                 <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteReason('resolved')}
+                    className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold border transition-all ${
+                      deleteReason === 'resolved'
+                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+                        : 'border-zinc-600 text-zinc-200 hover:bg-zinc-800/70'
+                    }`}
+                  >
+                    Resolved (normal)
+                  </button>
                   <button
                     type="button"
                     onClick={() => setDeleteReason('irrelevant')}
