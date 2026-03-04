@@ -40,6 +40,7 @@ npm run migrate-v6   # add rejected status support
 npm run migrate-v7   # add contact_phone and contact_email to complaints
 npm run migrate-v8   # add complaint_reports table (dept → admin flags)
 npm run migrate-v9   # add complaint_history table for deleted complaints
+npm run migrate-v10  # add spam_score field for basic spam detection
 
 # Start backend server
 npm start
