@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
+import { getUser } from '../utils/auth';
 
 const ComplaintDetail = () => {
   const { id } = useParams();
@@ -10,6 +11,7 @@ const ComplaintDetail = () => {
   const location = useLocation();
   const isAdminView = location.pathname.startsWith('/dashboard/admin');
   const { isDark } = useTheme();
+  const user = getUser();
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,6 +20,13 @@ const ComplaintDetail = () => {
   const [translating, setTranslating] = useState(false);
   const [translated, setTranslated] = useState('');
   const [showHindi, setShowHindi] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportMessage, setReportMessage] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('irrelevant');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const fetchComplaint = async () => {
@@ -44,7 +53,8 @@ const ComplaintDetail = () => {
       await api.put(`/complaints/${complaint.id}`, { status });
       setComplaint({ ...complaint, status });
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to update status');
+      console.error('Failed to update status', err);
+      setError(err.response?.data?.error || 'Failed to update status');
     } finally {
       setUpdating(false);
     }
@@ -110,9 +120,48 @@ const ComplaintDetail = () => {
       setTranslated(res.data?.translatedText || '');
       setShowHindi(true);
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to translate description');
+      console.error('Failed to translate description', err);
+      setError(err.response?.data?.error || 'Failed to translate description');
     } finally {
       setTranslating(false);
+    }
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!complaint || !reportText.trim()) {
+      setReportMessage('Please enter a short reason to report this complaint.');
+      return;
+    }
+    setReportSubmitting(true);
+    setReportMessage('');
+    try {
+      await api.post(`/complaints/${complaint.id}/report`, {
+        reason: reportText.trim(),
+      });
+      setReportMessage('Report submitted to admin.');
+      setReportText('');
+      setReportOpen(false);
+    } catch (err) {
+      setReportMessage(err.response?.data?.error || 'Failed to submit report.');
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
+  const handleDeleteComplaint = async () => {
+    if (!complaint) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/complaints/${complaint.id}`, {
+        data: { reason: deleteReason },
+      });
+      setDeleteLoading(false);
+      setDeleteOpen(false);
+      navigate('/dashboard/admin');
+    } catch (err) {
+      setDeleteLoading(false);
+      setError(err.response?.data?.error || 'Failed to delete complaint');
     }
   };
 
@@ -199,6 +248,9 @@ const ComplaintDetail = () => {
                   </h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className={`px-2.5 py-1 rounded-full font-mono font-semibold ${isDark ? 'bg-sky-500/20 text-sky-200' : 'bg-sky-100 text-sky-800'}`} title="Complaint ID">
+                    ID: {complaint.tracking_code || complaint.id}
+                  </span>
                   <span className="px-2.5 py-1 rounded-full bg-zinc-800/80 text-zinc-200">
                     {complaint.category_name}
                   </span>
@@ -236,6 +288,44 @@ const ComplaintDetail = () => {
                     </span>
                   )}
                 </div>
+
+                {(complaint.contact_phone || complaint.contact_email) && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {complaint.contact_phone && (
+                      <button
+                        type="button"
+                        onClick={() => (window.location.href = `tel:${complaint.contact_phone}`)}
+                        className="group flex items-center justify-between rounded-xl border border-emerald-500/80 bg-emerald-500/10 px-4 py-2.5 text-xs sm:text-sm font-medium text-emerald-700 dark:text-emerald-200 hover:bg-emerald-500/20 hover:border-emerald-400 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-200 flex items-center justify-center text-xs">
+                            📞
+                          </span>
+                          <span>Phone</span>
+                        </span>
+                        <span className="font-mono group-hover:underline">
+                          {complaint.contact_phone}
+                        </span>
+                      </button>
+                    )}
+                    {complaint.contact_email && (
+                      <a
+                        href={`mailto:${complaint.contact_email}`}
+                        className="group flex items-center justify-between rounded-xl border border-sky-500/80 bg-sky-500/10 px-4 py-2.5 text-xs sm:text-sm font-medium text-sky-700 dark:text-sky-200 hover:bg-sky-500/20 hover:border-sky-400 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="h-5 w-5 rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-200 flex items-center justify-center text-xs">
+                            ✉️
+                          </span>
+                          <span>Email</span>
+                        </span>
+                        <span className="font-mono group-hover:underline break-all">
+                          {complaint.contact_email}
+                        </span>
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -274,6 +364,127 @@ const ComplaintDetail = () => {
                 <p className={`text-sm leading-relaxed ${mutedClass}`}>
                   {showHindi && translated ? translated : complaint.description}
                 </p>
+              </div>
+
+              {/* Department-only: report (flag) option */}
+              {user?.role === 'department' && (
+                <div className="mt-4 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReportOpen((open) => !open);
+                      setReportMessage('');
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-red-500/80 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <span>🚩 Report this complaint to admin</span>
+                  </button>
+                  {reportOpen && (
+                    <form onSubmit={handleReportSubmit} className="space-y-2">
+                      <textarea
+                        rows={3}
+                        value={reportText}
+                        onChange={(e) => setReportText(e.target.value)}
+                        className="w-full rounded-lg border border-zinc-700 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/60"
+                        placeholder="Briefly describe why this complaint should be reviewed by the admin."
+                      />
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          type="submit"
+                          disabled={reportSubmitting}
+                          className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {reportSubmitting ? 'Submitting…' : 'Submit report'}
+                        </button>
+                        {reportMessage && (
+                          <p className="text-xs text-zinc-300">{reportMessage}</p>
+                        )}
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+              {user?.role === 'super_admin' && complaint.status === 'resolved' && (
+                <div className="mt-4 border-t border-zinc-700/60 pt-4">
+                  <div className="flex flex-col gap-3">
+                    <p className={`text-xs ${mutedClass}`}>
+                      This complaint is resolved. You can remove it completely from the system once any follow-up
+                      is finished. The complaint will be moved into history and all attachments will be deleted.
+                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex gap-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setDeleteReason('irrelevant')}
+                          className={`rounded-full px-3 py-1 font-semibold border ${
+                            deleteReason === 'irrelevant'
+                              ? 'border-amber-500 text-amber-300 bg-amber-500/10'
+                              : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
+                          }`}
+                        >
+                          Irrelevant
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteReason('spam')}
+                          className={`rounded-full px-3 py-1 font-semibold border ${
+                            deleteReason === 'spam'
+                              ? 'border-red-500 text-red-300 bg-red-500/10'
+                              : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800/70'
+                          }`}
+                        >
+                          Spam
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500 transition-colors"
+                      >
+                        Delete complaint
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {deleteOpen && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+            <div
+              className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${
+                isDark ? 'bg-zinc-900 border border-zinc-700' : 'bg-white border border-slate-200'
+              }`}
+            >
+              <h3 className={`text-lg font-semibold mb-2 ${textClass}`}>Confirm delete</h3>
+              <p className={`text-sm mb-4 ${mutedClass}`}>
+                This will permanently delete this complaint and its attachments. A compact record will be kept in
+                history, but the full data and images will be removed.
+              </p>
+              <div className="mb-4 rounded-xl bg-zinc-900/40 px-3 py-2 text-xs text-zinc-200">
+                <div className="font-mono">
+                  ID: {complaint.tracking_code || complaint.id}
+                </div>
+                <div className="mt-1 line-clamp-2">{complaint.title}</div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(false)}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold border border-zinc-600 text-zinc-200 hover:bg-zinc-800/70 transition-all"
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteComplaint}
+                  disabled={deleteLoading}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold bg-red-600 hover:bg-red-500 text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                >
+                  {deleteLoading ? 'Deleting…' : 'Delete complaint'}
+                </button>
               </div>
             </div>
           </div>
