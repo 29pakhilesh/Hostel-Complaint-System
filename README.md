@@ -63,9 +63,9 @@ This project is a **Hostel Grievance Redressal System** for institutions (e.g. J
 
 | Area | Description |
 |------|-------------|
-| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
-| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · Secure department-only login |
-| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords |
+| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · Provide phone (required) and email (optional) · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
+| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · See student contact details · Secure department-only login · Flag complaints for admin review |
+| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords · See department reports with live red-badge counter · Take action on reports (delete spam/irrelevant complaints or clear report) · View compact history of deleted complaints |
 | **🎨 UI** | Dark/light theme · Snowfall background · Print-optimized (white background, no clutter) · Responsive · Slate/sky themed design |
 
 ---
@@ -179,20 +179,23 @@ hostel-complaint-system/
 │   ├── middleware/
 │   │   └── auth.js
 │   ├── migrations/
-│   │   ├── migrate.js
-│   │   ├── migrate-v2.js
-│   │   ├── migrate-v3.js
-│   │   ├── migrate-v4.js
-│   │   ├── migrate-v5.js
-│   │   └── migrate-v6.js
+│   │   ├── migrate.js       # base schema, default super admin, categories
+│   │   ├── migrate-v2.js    # department role + per-category department users
+│   │   ├── migrate-v3.js    # hostel/block/room + image_paths on complaints
+│   │   ├── migrate-v4.js    # inprogress status
+│   │   ├── migrate-v5.js    # short tracking_code for public tracking
+│   │   ├── migrate-v6.js    # rejected status support
+│   │   ├── migrate-v7.js    # contact_phone and contact_email on complaints
+│   │   ├── migrate-v8.js    # complaint_reports table (department → admin flags)
+│   │   └── migrate-v9.js    # complaint_history table (compact audit of deletions)
 │   ├── routes/
-│   │   ├── auth.js
-│   │   ├── categories.js
-│   │   ├── complaints.js
-│   │   └── translate.js
+│   │   ├── auth.js          # login + super admin tools
+│   │   ├── categories.js    # category listing
+│   │   ├── complaints.js    # public submit/track + department/admin views, reports, history, deletion
+│   │   └── translate.js     # English → Hindi helper for departments
 │   ├── scripts/
 │   │   └── create-user.js
-│   └── uploads/              # runtime: complaint images
+│   └── uploads/              # runtime: complaint images (deleted automatically when complaints are removed)
 │
 └── frontend/
     ├── .gitignore
@@ -251,7 +254,7 @@ Students do not have accounts; complaints are submitted publicly.
 | `make dev` | Start backend + frontend in one terminal |
 | `make backend` | Start only backend (port 5002) |
 | `make frontend` | Start only frontend (Vite) |
-| `make migrate-db` | Run all database migrations (v1–v6) |
+| `make migrate-db` | Run all database migrations (v1–v9) |
 | `make stop-backend` | Stop backend on port 5002 |
 | `make stop-frontend` | Stop Vite dev server (ports 3000–3002) |
 
