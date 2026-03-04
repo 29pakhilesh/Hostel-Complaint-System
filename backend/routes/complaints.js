@@ -3,6 +3,7 @@ import pool from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const router = express.Router();
@@ -27,6 +28,29 @@ const upload = multer({
 const generateTrackingCode = () =>
   String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
 
+const deleteComplaintFiles = async (imagePaths) => {
+  if (!imagePaths) return;
+
+  const rootDir = path.join(__dirname, '..');
+  const pathsArray = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+
+  await Promise.all(
+    pathsArray
+      .filter(Boolean)
+      .map(async (p) => {
+        try {
+          const relative = p.replace(/^\//, '');
+          const filePath = path.join(rootDir, relative);
+          await fs.promises.unlink(filePath);
+        } catch (err) {
+          if (err.code !== 'ENOENT') {
+            console.error('Failed to delete complaint image:', p, err);
+          }
+        }
+      })
+  );
+};
+
 // Public: get complaint details by ID or tracking code (for tracking)
 router.get('/public/:idOrCode', async (req, res) => {
   try {
@@ -49,6 +73,8 @@ router.get('/public/:idOrCode', async (req, res) => {
           c.block,
           c.room_number,
           c.image_paths,
+          c.contact_phone,
+          c.contact_email,
           cat.name as category_name
         FROM complaints c
         JOIN categories cat ON c.category_id = cat.id
@@ -72,6 +98,8 @@ router.get('/public/:idOrCode', async (req, res) => {
           c.block,
           c.room_number,
           c.image_paths,
+          c.contact_phone,
+          c.contact_email,
           cat.name as category_name
         FROM complaints c
         JOIN categories cat ON c.category_id = cat.id
@@ -113,6 +141,8 @@ router.get('/', authenticateToken, async (req, res) => {
           c.block,
           c.room_number,
           c.image_paths,
+          c.contact_phone,
+          c.contact_email,
           cat.name as category_name,
           cat.id as category_id
         FROM complaints c
@@ -139,6 +169,8 @@ router.get('/', authenticateToken, async (req, res) => {
             c.block,
             c.room_number,
             c.image_paths,
+            c.contact_phone,
+            c.contact_email,
             cat.name as category_name,
             cat.id as category_id
           FROM complaints c
@@ -161,6 +193,8 @@ router.get('/', authenticateToken, async (req, res) => {
             c.block,
             c.room_number,
             c.image_paths,
+            c.contact_phone,
+            c.contact_email,
             cat.name as category_name,
             cat.id as category_id
           FROM complaints c
@@ -199,6 +233,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
         c.block,
         c.room_number,
         c.image_paths,
+        c.contact_phone,
+        c.contact_email,
         cat.name as category_name,
         cat.id as category_id
       FROM complaints c
@@ -244,11 +280,19 @@ router.post('/', upload.array('images', 3), async (req, res) => {
       hostel_name,
       block,
       room_number,
+      contact_phone,
+      contact_email,
     } = req.body;
 
     if (!title || !description || !category_id) {
       return res.status(400).json({ 
         error: 'Title, description, and category_id are required' 
+      });
+    }
+
+    if (!contact_phone || !contact_phone.trim()) {
+      return res.status(400).json({
+        error: 'Phone number is required',
       });
     }
 
@@ -279,10 +323,12 @@ router.post('/', upload.array('images', 3), async (req, res) => {
          block,
          room_number,
          image_paths,
+         contact_phone,
+         contact_email,
          tracking_code
        )
-       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7, $8)
-       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths, tracking_code`,
+       VALUES ($1, $2, $3, NULL, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING id, title, description, status, created_at, category_id, hostel_name, block, room_number, image_paths, contact_phone, contact_email, tracking_code`,
       [
         title.trim(),
         description.trim(),
@@ -291,6 +337,8 @@ router.post('/', upload.array('images', 3), async (req, res) => {
         block?.trim() || null,
         room_number?.trim() || null,
         imagePaths.length > 0 ? imagePaths : null,
+        contact_phone.trim(),
+        contact_email?.trim() || null,
         trackingCode,
       ]
     );
@@ -379,6 +427,245 @@ router.put('/:id', authenticateToken, async (req, res) => {
         error: "Database does not support 'rejected' status yet. Run migration: node migrations/migrate-v6.js",
       });
     }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Department: report a complaint (flag) to super admin
+router.post('/:id/report', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'department') {
+      return res.status(403).json({ error: 'Only department users can report complaints' });
+    }
+
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ error: 'Reason is required to report a complaint' });
+    }
+
+    // Ensure complaint exists and belongs to this department's category
+    const complaintCheck = await pool.query(
+      'SELECT id, category_id FROM complaints WHERE id = $1',
+      [id]
+    );
+
+    if (complaintCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    if (!req.user.category_id || complaintCheck.rows[0].category_id !== req.user.category_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const insert = await pool.query(
+      `INSERT INTO complaint_reports (complaint_id, department_user_id, reason)
+       VALUES ($1, $2, $3)
+       RETURNING id, complaint_id, reason, created_at`,
+      [id, req.user.id, reason.trim()]
+    );
+
+    res.status(201).json(insert.rows[0]);
+  } catch (error) {
+    console.error('Report complaint error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin: delete a complaint as spam or irrelevant (also archives a small history record)
+router.delete('/:id', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'super_admin') {
+    return res.status(403).json({ error: 'Only super admins can delete complaints' });
+  }
+
+  const { id } = req.params;
+  const { reason } = req.body || {};
+
+  const allowedReasons = ['irrelevant', 'spam'];
+
+  if (!reason || !allowedReasons.includes(reason)) {
+    return res.status(400).json({
+      error: 'Reason is required and must be either "irrelevant" or "spam"',
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const complaintResult = await client.query(
+      `
+      SELECT 
+        c.*,
+        cat.name AS category_name
+      FROM complaints c
+      JOIN categories cat ON c.category_id = cat.id
+      WHERE c.id = $1
+      `,
+      [id]
+    );
+
+    if (complaintResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    const complaint = complaintResult.rows[0];
+
+    await client.query(
+      `
+      INSERT INTO complaint_history (
+        original_complaint_id,
+        tracking_code,
+        title,
+        status,
+        category_name,
+        hostel_name,
+        block,
+        room_number,
+        created_at,
+        resolved_at,
+        deleted_by,
+        deletion_reason
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `,
+      [
+        complaint.id,
+        complaint.tracking_code,
+        complaint.title,
+        complaint.status,
+        complaint.category_name,
+        complaint.hostel_name,
+        complaint.block,
+        complaint.room_number,
+        complaint.created_at,
+        complaint.status === 'resolved' ? complaint.updated_at : null,
+        req.user.id,
+        reason,
+      ]
+    );
+
+    await client.query('DELETE FROM complaints WHERE id = $1', [id]);
+
+    await client.query('COMMIT');
+
+    // Delete any stored image files for this complaint
+    await deleteComplaintFiles(complaint.image_paths);
+
+    return res.json({
+      message: 'Complaint deleted successfully',
+      reason,
+      complaint: {
+        id: complaint.id,
+        tracking_code: complaint.tracking_code,
+        title: complaint.title,
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Delete complaint error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin: list all complaint reports from departments
+router.get('/reports/all', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT 
+        r.id,
+        r.complaint_id,
+        r.reason,
+        r.created_at,
+        c.tracking_code,
+        c.title,
+        c.description,
+        c.hostel_name,
+        c.block,
+        c.room_number,
+        c.contact_phone,
+        c.contact_email,
+        cat.name AS category_name
+      FROM complaint_reports r
+      JOIN complaints c ON r.complaint_id = c.id
+      JOIN categories cat ON c.category_id = cat.id
+      ORDER BY r.created_at DESC
+      `
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Get complaint reports error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin: clear a single complaint report without deleting the complaint
+router.delete('/reports/:id', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { id } = req.params;
+
+    const result = await pool.query(
+      'DELETE FROM complaint_reports WHERE id = $1 RETURNING id',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    res.json({ message: 'Report cleared' });
+  } catch (error) {
+    console.error('Delete complaint report error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin: view compact history of deleted complaints
+router.get('/history', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        original_complaint_id,
+        tracking_code,
+        title,
+        status,
+        category_name,
+        hostel_name,
+        block,
+        room_number,
+        deletion_reason,
+        deleted_at,
+        created_at,
+        resolved_at
+      FROM complaint_history
+      ORDER BY deleted_at DESC
+      `
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Get complaint history error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
