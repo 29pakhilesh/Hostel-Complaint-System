@@ -71,6 +71,22 @@ const DepartmentDashboard = () => {
       : `${baseClasses} bg-yellow-50 text-yellow-700 border-2 border-yellow-400`;
   };
 
+  const getSpamBadge = (spamScore) => {
+    if (spamScore == null || spamScore < 40) return null;
+    if (spamScore >= 70) {
+      return (
+        <span className="ml-2 inline-flex items-center rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300 border border-red-500/70">
+          Likely spam
+        </span>
+      );
+    }
+    return (
+      <span className="ml-2 inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-500/70">
+        Possibly spam
+      </span>
+    );
+  };
+
   // Get category name from user or complaints
   const categoryName = complaints.length > 0 ? complaints[0]?.category_name : user?.full_name?.replace(' Department', '');
 
@@ -197,9 +213,12 @@ const DepartmentDashboard = () => {
                       </td>
                       {/* Images and contact moved to detail view to keep dashboard minimal */}
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={getStatusBadge(complaint.status)}>
-                          {complaint.status}
-                        </span>
+                        <div className="flex items-center">
+                          <span className={getStatusBadge(complaint.status)}>
+                            {complaint.status}
+                          </span>
+                          {getSpamBadge(complaint.spam_score)}
+                        </div>
                       </td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                         {formatDate(complaint.created_at)}
