@@ -11,7 +11,7 @@ help:
 	@echo "  make backend        - Start only backend (port 5002). Use in terminal 1."
 	@echo "  make frontend       - Start only frontend (Vite). Use in terminal 2."
 	@echo ""
-	@echo "  make migrate-db     - Run all database migrations (v1–v9)"
+	@echo "  make migrate-db     - Run all database migrations (v1–v10)"
 	@echo "  make stop-backend   - Stop backend server on port 5002"
 	@echo "  make stop-frontend  - Stop Vite dev server (common ports)"
 
@@ -24,7 +24,7 @@ frontend-install:
 	cd frontend && npm install
 
 migrate-db:
-	cd backend && npm run migrate && npm run migrate-v2 && npm run migrate-v3 && npm run migrate-v4 && npm run migrate-v5 && npm run migrate-v6 && npm run migrate-v7 && npm run migrate-v8 && npm run migrate-v9
+	cd backend && npm run migrate && npm run migrate-v2 && npm run migrate-v3 && npm run migrate-v4 && npm run migrate-v5 && npm run migrate-v6 && npm run migrate-v7 && npm run migrate-v8 && npm run migrate-v9 && npm run migrate-v10
 
 backend:
 	cd backend && npm start
