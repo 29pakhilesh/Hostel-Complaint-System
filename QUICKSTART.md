@@ -36,6 +36,10 @@ npm run migrate-v2   # add department role + per-category department users
 npm run migrate-v3   # add hostel/block/room + image_paths to complaints
 npm run migrate-v4   # add inprogress status
 npm run migrate-v5   # add short tracking_code for complaints
+npm run migrate-v6   # add rejected status support
+npm run migrate-v7   # add contact_phone and contact_email to complaints
+npm run migrate-v8   # add complaint_reports table (dept → admin flags)
+npm run migrate-v9   # add complaint_history table for deleted complaints
 
 # Start backend server
 npm start
