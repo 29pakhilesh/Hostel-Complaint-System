@@ -64,6 +64,14 @@ body:not(.dark) .snowflake {
   }
 }
 
+/* Print-only blocks: hidden on screen, shown only when printing */
+.print-confirmation-page {
+  display: none;
+}
+.print-status-header {
+  display: none;
+}
+
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -75,159 +83,185 @@ body:not(.dark) .snowflake {
   }
 }
 
-/* Print: always white background, single page, no blank second page */
+/* ========== PRINT: Landscape A4, simpler & reliable ========== */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
   html,
-  body,
-  body.dark,
-  #root,
-  #root > * {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
-    background-color: #ffffff !important;
     color: #111827 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  /* Prevent blank second page: constrain height and avoid page break after */
-  html, body {
-    min-height: 0 !important;
-    overflow: hidden !important;
-    height: auto !important;
-    max-height: 100vh !important;
+
+  /* Force all app backgrounds to white in print (except actual images) */
+  #root,
+  #root *:not(img):not(svg) {
+    background: #ffffff !important;
+    box-shadow: none !important;
   }
+
+  /* Status + confirmation containers: keep them white and avoid dark themes */
   .print-status-page,
   .print-confirmation-page {
-    page-break-after: avoid !important;
+    background: #ffffff !important;
   }
-  .print-status-page {
-    break-after: avoid !important;
+
+  /* Print-only header/blocks: visible only when printing */
+  .print-status-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4mm !important;
   }
   .print-confirmation-page {
-    break-after: avoid !important;
+    display: block !important;
   }
-  /* Landscape A4: 297mm x 210mm, margin 10mm → usable 277mm x 190mm */
-  .print-status-page {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    min-height: 0 !important;
-    width: 277mm !important;
-    height: 190mm !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .print-status-page-inner {
-    width: 100% !important;
-    height: 190mm !important;
-    max-width: none !important;
-    box-sizing: border-box;
-    padding: 6mm !important;
-    background: #ffffff !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  .print-status-page-inner .print-status-content {
-    flex: 1 !important;
-    min-height: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 4mm !important;
-  }
-  /* Two-column layout in print to fill landscape */
-  .print-status-page-inner .print-status-content .print-status-body {
-    flex: 1 !important;
-    min-height: 0 !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 6mm !important;
-    align-content: start !important;
-  }
-  .print-status-body .print-col-left {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2mm !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-  .print-status-body .print-col-right {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2mm !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-  /* Compact print so everything fits one landscape page */
-  .print-status-content .print-status-body {
-    font-size: 10px !important;
-  }
-  .print-status-content .print-status-body section {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .print-status-content .print-status-body img {
-    max-height: 40mm !important;
-    object-fit: contain !important;
-  }
+
   .print-status-content,
-  .print-status-content * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .print-status-content {
+  .print-confirmation-details {
     background: #ffffff !important;
     color: #111827 !important;
   }
+
+  /* Normalize dark backgrounds/text inside the print card */
   .print-status-content [class*="bg-dark-black"],
   .print-status-content .bg-dark-black-800,
   .print-status-content .bg-dark-black-900,
   .print-status-content .bg-slate-950,
-  .print-status-content .bg-slate-50 {
+  .print-status-content .bg-slate-50,
+  .print-confirmation-details [class*="bg-dark-black"],
+  .print-confirmation-details .bg-dark-black-800,
+  .print-confirmation-details .bg-dark-black-900,
+  .print-confirmation-details .bg-slate-950,
+  .print-confirmation-details .bg-slate-50 {
     background: #ffffff !important;
   }
+
   .print-status-content .text-zinc-100,
-  .print-status-content .text-slate-100 {
+  .print-status-content .text-slate-100,
+  .print-confirmation-details .text-zinc-100,
+  .print-confirmation-details .text-slate-100 {
     color: #111827 !important;
   }
+
   .print-status-content .text-zinc-400,
-  .print-status-content .text-slate-400 {
+  .print-status-content .text-slate-400,
+  .print-confirmation-details .text-zinc-400,
+  .print-confirmation-details .text-slate-400 {
     color: #4b5563 !important;
   }
+
   .print-status-content .border-slate-700,
   .print-status-content .border-dark-black-700,
-  .print-status-content .border-zinc-700 {
+  .print-status-content .border-zinc-700,
+  .print-confirmation-details .border-slate-700,
+  .print-confirmation-details .border-dark-black-700,
+  .print-confirmation-details .border-zinc-700 {
     border-color: #d1d5db !important;
   }
-  .print-status-content .bg-emerald-500\/20 {
-    background-color: rgba(16, 185, 129, 0.15) !important;
+
+  /* Print logo sizing: keep it compact and consistent */
+  .print-status-header img,
+  .print-confirmation-header img {
+    height: 11mm !important;
+    width: auto !important;
+    object-fit: contain !important;
   }
-  .print-status-content .text-emerald-500 {
-    color: #059669 !important;
+
+  /* Make institute name stand out in print */
+  .print-status-title,
+  .print-confirmation-org {
+    font-size: 13pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
   }
-  .print-status-content .border-emerald-500 {
-    border-color: #059669 !important;
+
+  /* Confirmation page layout: centered tick with stacked details */
+  .print-confirmation-inner {
+    max-width: 230mm !important;
+    margin: 0 auto !important;
+    padding: 6mm 0 !important;
   }
-  .print-status-content .bg-sky-500\/10,
-  .print-status-content .bg-emerald-500\/10 {
-    background-color: rgba(14, 165, 233, 0.08) !important;
+  .print-confirmation-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4mm !important;
+    margin-bottom: 4mm !important;
+    padding-bottom: 3mm !important;
+    border-bottom: 1px solid #e5e7eb !important;
   }
-  .print-status-content .border-sky-500 {
-    border-color: #0ea5e9 !important;
+  .print-confirmation-success {
+    text-align: center !important;
+    margin: 4mm 0 !important;
   }
-  .print-status-content .text-sky-300,
-  .print-status-content .text-emerald-300 {
-    color: #0d9488 !important;
+  .print-confirmation-tick {
+    width: 14mm !important;
+    height: 14mm !important;
+    margin: 0 auto 2mm !important;
+    border-radius: 9999px !important;
+    border: 3px solid #16a34a !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18pt !important;
+    font-weight: 700 !important;
+    color: #16a34a !important;
   }
-  /* Confirmation page: single page, no overflow */
-  .print-confirmation-page {
-    max-height: 277mm !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    padding: 8mm 10mm !important;
+  .print-confirmation-title {
+    font-size: 14pt !important;
+    font-weight: 600 !important;
+    margin: 0 0 1mm !important;
+    color: #111827 !important;
   }
-  @page {
-    size: A4 landscape;
-    margin: 10mm;
+  .print-confirmation-note {
+    font-size: 9pt !important;
+    color: #4b5563 !important;
+    margin: 0 !important;
+  }
+  .print-confirmation-details {
+    margin-top: 5mm !important;
+    padding: 5mm 6mm !important;
+    border-radius: 3mm !important;
+    border: 1px solid #e5e7eb !important;
+    background: #fafafa !important;
+    font-size: 9pt !important;
+  }
+  .print-confirmation-row {
+    margin-bottom: 3mm !important;
+  }
+  .print-confirmation-label {
+    display: block !important;
+    font-size: 8pt !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #6b7280 !important;
+    margin-bottom: 0.5mm !important;
+  }
+  .print-confirmation-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+  }
+  .print-confirmation-value {
+    margin: 0 !important;
+    color: #111827 !important;
+  }
+  .print-confirmation-footer {
+    margin-top: 4mm !important;
+    padding-top: 2mm !important;
+    border-top: 1px solid #e5e7eb !important;
+    font-size: 7pt !important;
+    color: #9ca3af !important;
+    text-align: center !important;
   }
 }
 
