@@ -12,7 +12,13 @@ const DepartmentLogin = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
   const navigate = useNavigate();
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +32,7 @@ const DepartmentLogin = () => {
       // Check if user is a department user
       if (user.role !== 'department') {
         setError('Access denied. This login is for department users only.');
+        triggerShake();
         setLoading(false);
         return;
       }
@@ -34,6 +41,7 @@ const DepartmentLogin = () => {
       navigate('/dashboard/department');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
+      triggerShake();
     } finally {
       setLoading(false);
     }
@@ -58,7 +66,7 @@ const DepartmentLogin = () => {
     <div className={`relative min-h-screen flex items-center justify-center ${bgClass} px-4 transition-colors duration-500`}>
       <SnowfallOverlay />
       <div className="relative w-full max-w-md animate-fade-in-up">
-        <div className={`${cardBgClass} rounded-2xl p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500`} style={shadowStyle}>
+        <div className={`${cardBgClass} rounded-2xl p-8 shadow-2xl border border-zinc-700/60 ${borderClass} backdrop-blur-xl transition-colors duration-500 ${shake ? 'login-shake' : ''}`} style={shadowStyle}>
           <div className="text-center mb-8">
             <div className="flex justify-center mb-3">
               <img

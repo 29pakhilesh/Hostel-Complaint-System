@@ -8,6 +8,7 @@ import ComplaintConfirmation from './pages/ComplaintConfirmation';
 import TrackComplaint from './pages/TrackComplaint';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import ResetAdminPassword from './pages/ResetAdminPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
 import ThemeToggle from './components/ThemeToggle';
@@ -28,6 +29,7 @@ function App() {
           
           {/* Super admin / legacy login */}
           <Route path="/login/admin" element={<Login />} />
+          <Route path="/reset-admin-password" element={<ResetAdminPassword />} />
 
           {/* Department login */}
           <Route path="/login/department" element={<DepartmentLogin />} />

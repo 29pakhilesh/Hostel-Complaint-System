@@ -83,6 +83,47 @@ body:not(.dark) .snowflake {
   }
 }
 
+/* Subtle shake animation for invalid login */
+@keyframes login-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.login-shake {
+  animation: login-shake 0.4s ease;
+}
+
+/* Brief red flash overlay for admin login errors */
+@keyframes login-flash {
+  0% {
+    background: rgba(239, 68, 68, 0);
+  }
+  40% {
+    background: rgba(239, 68, 68, 0.35);
+  }
+  100% {
+    background: rgba(239, 68, 68, 0);
+  }
+}
+
+.login-flash-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  animation: login-flash 0.45s ease;
+}
+
 /* ========== PRINT: Landscape A4, simpler & reliable ========== */
 @media print {
   @page {

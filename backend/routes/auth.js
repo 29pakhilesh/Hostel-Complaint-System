@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import speakeasy from 'speakeasy';
 import pool from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -73,7 +74,7 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, totp_code } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -93,6 +94,38 @@ router.post('/login', async (req, res) => {
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Enforce TOTP for super admin if secret configured
+    if (user.role === 'super_admin' && process.env.SUPER_ADMIN_TOTP_SECRET) {
+      if (!totp_code) {
+        return res.status(400).json({ error: 'TOTP code is required for admin login' });
+      }
+
+      // Debug: compare provided vs server-generated TOTP in logs
+      try {
+        const serverToken = speakeasy.totp({
+          secret: process.env.SUPER_ADMIN_TOTP_SECRET,
+          encoding: 'base32',
+        });
+        console.log('DEBUG TOTP login', {
+          provided: String(totp_code).trim(),
+          serverToken,
+        });
+      } catch (e) {
+        console.error('TOTP debug error:', e);
+      }
+
+      const isValidTotp = speakeasy.totp.verify({
+        secret: process.env.SUPER_ADMIN_TOTP_SECRET,
+        encoding: 'base32',
+        token: String(totp_code).trim(),
+        window: 2, // allow small clock drift
+      });
+
+      if (!isValidTotp) {
+        return res.status(403).json({ error: 'Invalid or expired TOTP code' });
+      }
     }
 
     const token = jwt.sign(
@@ -164,17 +197,40 @@ router.put('/admin/users/:id/password', authenticateToken, requireSuperAdmin, as
   }
 });
 
-// Secret super admin password reset using reset key
+// Secret super admin password reset using reset key or TOTP (if configured)
 router.post('/admin/reset-super', async (req, res) => {
   try {
-    const { reset_key, new_password } = req.body;
+    const { reset_key, new_password, totp_code } = req.body;
 
-    if (!reset_key || !new_password) {
-      return res.status(400).json({ error: 'reset_key and new_password are required' });
+    if (!new_password) {
+      return res.status(400).json({ error: 'new_password is required' });
     }
 
-    if (reset_key !== process.env.SUPER_ADMIN_RESET_KEY) {
-      return res.status(403).json({ error: 'Invalid reset key' });
+    const hasTotpSecret = !!process.env.SUPER_ADMIN_TOTP_SECRET;
+
+    // Prefer TOTP when provided and secret configured
+    if (hasTotpSecret && totp_code) {
+      const isValidTotp = speakeasy.totp.verify({
+        secret: process.env.SUPER_ADMIN_TOTP_SECRET,
+        encoding: 'base32',
+        token: String(totp_code).trim(),
+        window: 2, // allow small clock drift
+      });
+
+      if (!isValidTotp) {
+        return res.status(403).json({ error: 'Invalid or expired TOTP code' });
+      }
+    } else if (reset_key) {
+      // Fallback to static reset key
+      if (reset_key !== process.env.SUPER_ADMIN_RESET_KEY) {
+        return res.status(403).json({ error: 'Invalid reset key' });
+      }
+    } else {
+      // Neither provided
+      if (hasTotpSecret) {
+        return res.status(400).json({ error: 'Provide either a TOTP code or reset key' });
+      }
+      return res.status(400).json({ error: 'reset_key is required' });
     }
 
     if (new_password.length < 6) {

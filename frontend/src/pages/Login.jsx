@@ -11,21 +11,44 @@ const Login = () => {
   const { isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totp, setTotp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [flashError, setFlashError] = useState(false);
   const navigate = useNavigate();
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+  };
+
+  const triggerFlash = () => {
+    setFlashError(true);
+    setTimeout(() => setFlashError(false), 450);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!totp.trim()) {
+      setError('Enter the 6-digit TOTP code from your authenticator app.');
+      triggerShake();
+      triggerFlash();
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password, totp_code: totp.trim() });
       const { token, user } = response.data;
 
       if (user.role !== 'super_admin') {
         setError('Access denied. This login is for the super admin only.');
+        triggerShake();
+        triggerFlash();
         setLoading(false);
         return;
       }
@@ -34,6 +57,8 @@ const Login = () => {
       navigate('/dashboard/admin');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
+      triggerShake();
+      triggerFlash();
     } finally {
       setLoading(false);
     }
@@ -48,9 +73,10 @@ const Login = () => {
 
   return (
     <div className={`relative min-h-screen flex items-center justify-center ${bgClass} px-4 py-10 transition-colors duration-300`}>
+      {flashError && <div className="login-flash-overlay" />}
       <SnowfallOverlay />
       <div className="w-full max-w-md relative">
-        <div className={`${cardBgClass} rounded-2xl p-8 sm:p-10`}>
+        <div className={`${cardBgClass} rounded-2xl p-8 sm:p-10 ${shake ? 'login-shake' : ''}`}>
           <div className="text-center mb-8">
             <img src={JUIT_LOGO_SRC} alt="JUIT" className="h-12 w-12 mx-auto mb-4 object-contain" />
             <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${textMainClass}`}>
@@ -97,6 +123,24 @@ const Login = () => {
                 required
                 className={`w-full px-4 py-3 rounded-xl border ${inputBgClass} ${inputFocusClass}`}
                 placeholder="Enter your password"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="totp" className={`block text-sm font-semibold mb-2 ${textMainClass}`}>
+                TOTP code
+              </label>
+              <input
+                id="totp"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={totp}
+                onChange={(e) => setTotp(e.target.value)}
+                required
+                className={`w-full px-4 py-3 rounded-xl border ${inputBgClass} ${inputFocusClass}`}
+                placeholder="6-digit code from authenticator"
               />
             </div>
 

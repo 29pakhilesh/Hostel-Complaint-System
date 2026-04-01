@@ -38,3 +38,4 @@ migrate()
     console.error('Migration v6 process failed:', error);
     process.exit(1);
   });
+  
