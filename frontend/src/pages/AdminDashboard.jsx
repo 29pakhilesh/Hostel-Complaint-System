@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser, clearAuth } from '../utils/auth';
@@ -31,6 +32,17 @@ const AdminDashboard = () => {
   const [activeReport, setActiveReport] = useState(null);
   const navigate = useNavigate();
   const user = getUser();
+
+  const portalTarget = typeof document !== 'undefined' ? document.body : null;
+
+  // Dropdown positioning to avoid overlap/click-through issues
+  const categoryBtnRef = useRef(null);
+  const categoryMenuRef = useRef(null);
+  const [categoryMenuPos, setCategoryMenuPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const deptBtnRef = useRef(null);
+  const deptMenuRef = useRef(null);
+  const [deptMenuPos, setDeptMenuPos] = useState({ top: 0, left: 0, width: 0 });
 
   const selectedCategoryLabel = selectedCategory ? (categories.find(c => c.id === selectedCategory)?.name || 'All') : 'All Categories';
   const selectedDeptLabel = selectedDeptId ? (departments.find(d => d.id === selectedDeptId)?.full_name || departments.find(d => d.id === selectedDeptId)?.email || 'Select') : 'Select department';
@@ -77,6 +89,91 @@ const AdminDashboard = () => {
     }, 5000);
     return () => clearTimeout(timer);
   }, [banner]);
+
+  // Keep dropdown menus anchored to their buttons (fixed positioning).
+  useEffect(() => {
+    if (!categoryOpen) return;
+    const el = categoryBtnRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    setCategoryMenuPos({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    });
+
+    const onReposition = () => {
+      const btn = categoryBtnRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setCategoryMenuPos({
+        top: r.bottom + 4,
+        left: r.left,
+        width: r.width,
+      });
+    };
+
+    window.addEventListener('scroll', onReposition, true);
+    window.addEventListener('resize', onReposition);
+    return () => {
+      window.removeEventListener('scroll', onReposition, true);
+      window.removeEventListener('resize', onReposition);
+    };
+  }, [categoryOpen, categories.length]);
+
+  useEffect(() => {
+    if (!deptOpen) return;
+    const el = deptBtnRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    setDeptMenuPos({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    });
+
+    const onReposition = () => {
+      const btn = deptBtnRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setDeptMenuPos({
+        top: r.bottom + 4,
+        left: r.left,
+        width: r.width,
+      });
+    };
+
+    window.addEventListener('scroll', onReposition, true);
+    window.addEventListener('resize', onReposition);
+    return () => {
+      window.removeEventListener('scroll', onReposition, true);
+      window.removeEventListener('resize', onReposition);
+    };
+  }, [deptOpen, departments.length]);
+
+  // Close dropdown when clicking outside.
+  useEffect(() => {
+    if (!categoryOpen && !deptOpen) return;
+
+    const onDown = (e) => {
+      const t = e.target;
+      if (categoryOpen) {
+        if (categoryBtnRef.current?.contains(t)) return;
+        if (categoryMenuRef.current?.contains(t)) return;
+      }
+      if (deptOpen) {
+        if (deptBtnRef.current?.contains(t)) return;
+        if (deptMenuRef.current?.contains(t)) return;
+      }
+      setCategoryOpen(false);
+      setDeptOpen(false);
+    };
+
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [categoryOpen, deptOpen]);
 
   const fetchComplaints = async () => {
     try {
@@ -368,45 +465,65 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className={`${cardBgClass} rounded-2xl p-4 ${cardBorderClass} mb-6`}>
+          <div className={`${cardBgClass} rounded-2xl p-4 ${cardBorderClass} mb-6 relative z-[100]`}>
             <label className={`block text-sm font-semibold mb-2 ${textMain}`}>
               Filter by Category
             </label>
             <div className="relative w-full md:w-64">
               <button
                 type="button"
-                onClick={() => { setCategoryOpen(o => !o); setDeptOpen(false); }}
-                className={`w-full px-4 py-2.5 rounded-xl border text-left text-sm font-medium flex items-center justify-between ${inputBgClass} focus:outline-none focus:ring-2 focus:ring-sky-500/50`}
+                  ref={categoryBtnRef}
+                  onClick={() => { setCategoryOpen(o => !o); setDeptOpen(false); }}
+                  className={`w-full px-4 py-2.5 rounded-xl border text-left text-sm font-medium flex items-center justify-between ${inputBgClass} focus:outline-none focus:ring-2 focus:ring-sky-500/50`}
               >
                 <span>{selectedCategoryLabel}</span>
                 <span className={textMuted}>{categoryOpen ? '▲' : '▼'}</span>
               </button>
               {categoryOpen && (
-                <div className={`absolute z-20 mt-1 w-full rounded-xl border shadow-xl ${dropdownBgClass} max-h-56 overflow-auto`}>
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedCategory(''); setCategoryOpen(false); }}
-                    className={`w-full px-4 py-2.5 text-left text-sm ${!selectedCategory ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
-                  >
-                    All Categories
-                  </button>
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => { setSelectedCategory(cat.id); setCategoryOpen(false); }}
-                      className={`w-full px-4 py-2.5 text-left text-sm ${selectedCategory === cat.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
+                portalTarget
+                  ? createPortal(
+                      <div
+                        ref={categoryMenuRef}
+                        style={{
+                          top: categoryMenuPos.top,
+                          left: categoryMenuPos.left,
+                          width: categoryMenuPos.width,
+                        }}
+                        className={`fixed z-[9999] mt-0 rounded-xl border shadow-xl dropdown-pop ${dropdownBgClass} max-h-56 overflow-auto`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory('');
+                            setCategoryOpen(false);
+                          }}
+                          className={`w-full px-4 py-2.5 text-left text-sm ${!selectedCategory ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                        >
+                          All Categories
+                        </button>
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCategory(cat.id);
+                              setCategoryOpen(false);
+                            }}
+                            className={`w-full px-4 py-2.5 text-left text-sm ${selectedCategory === cat.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                          >
+                            {cat.name}
+                          </button>
+                        ))}
+                      </div>,
+                      portalTarget,
+                    )
+                  : null
               )}
             </div>
           </div>
           {user?.role === 'super_admin' && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass}`}>
+              <div className={`${cardBgClass} rounded-2xl p-5 ${cardBorderClass} relative`}>
                 <h3 className={`text-sm font-semibold mb-3 ${textMain}`}>
                   Change Department Password
                 </h3>
@@ -414,6 +531,7 @@ const AdminDashboard = () => {
                   <div className="relative">
                     <button
                       type="button"
+                      ref={deptBtnRef}
                       onClick={() => { setDeptOpen(o => !o); setCategoryOpen(false); }}
                       className={`w-full px-3 py-2.5 rounded-xl border text-left text-sm flex items-center justify-between ${inputBgClass} focus:outline-none focus:ring-2 focus:ring-sky-500/50`}
                     >
@@ -421,18 +539,34 @@ const AdminDashboard = () => {
                       <span className={textMuted}>{deptOpen ? '▲' : '▼'}</span>
                     </button>
                     {deptOpen && (
-                      <div className={`absolute z-20 mt-1 w-full rounded-xl border shadow-xl ${dropdownBgClass} max-h-48 overflow-auto`}>
-                        {departments.map((d) => (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onClick={() => { setSelectedDeptId(d.id); setDeptOpen(false); }}
-                            className={`w-full px-3 py-2 text-left text-sm ${selectedDeptId === d.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
-                          >
-                            {d.full_name || d.email}
-                          </button>
-                        ))}
-                      </div>
+                      portalTarget
+                        ? createPortal(
+                            <div
+                              ref={deptMenuRef}
+                              style={{
+                                top: deptMenuPos.top,
+                                left: deptMenuPos.left,
+                                width: deptMenuPos.width,
+                              }}
+                              className={`fixed z-[9999] mt-0 rounded-xl border shadow-xl dropdown-pop ${dropdownBgClass} max-h-48 overflow-auto`}
+                            >
+                              {departments.map((d) => (
+                                <button
+                                  key={d.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedDeptId(d.id);
+                                    setDeptOpen(false);
+                                  }}
+                                  className={`w-full px-3 py-2 text-left text-sm ${selectedDeptId === d.id ? (isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-50 text-sky-800') : (isDark ? 'hover:bg-zinc-800' : 'hover:bg-slate-100')} ${textMain}`}
+                                >
+                                  {d.full_name || d.email}
+                                </button>
+                              ))}
+                            </div>,
+                            portalTarget,
+                          )
+                        : null
                     )}
                   </div>
                   <input

@@ -124,6 +124,23 @@ body:not(.dark) .snowflake {
   animation: login-flash 0.45s ease;
 }
 
+/* Dropdown open animation (admin dashboard) */
+@keyframes dropdown-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-pop {
+  animation: dropdown-pop 160ms ease-out both;
+  transform-origin: top center;
+}
+
 /* ========== PRINT: Landscape A4, simpler & reliable ========== */
 @media print {
   @page {
