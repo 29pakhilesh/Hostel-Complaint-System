@@ -41,6 +41,8 @@
 
 Watch a full walkthrough of the system: public complaint submission, tracking, department dashboard, super admin panel, and print/PDF flow.
 
+Built for real use: students submit complaints publicly, departments resolve by category, and a super admin oversees reports and audit history.
+
 <div align="center">
 
 [![Hostel Complaint System – Demo & overview](https://img.youtube.com/vi/2k0AIWF7i0I/maxresdefault.jpg)](https://youtu.be/2k0AIWF7i0I)
@@ -61,12 +63,41 @@ This project is a **Hostel Grievance Redressal System** for institutions (e.g. J
 
 ## ✨ Features
 
-| Area | Description |
-|------|-------------|
-| **👨‍🎓 Public** | Submit complaints without login · Upload up to 3 images · Provide phone (required) and email (optional) · Basic spam detection on random/vulgar text · 6-digit tracking ID · Track status on a dedicated page · A4 landscape print-ready status |
-| **🏢 Department** | Category-based access · Update status (pending → in progress → resolved/rejected) · View attachments & location · See student contact details · Secure department-only login · Flag complaints for admin review · See “possibly/likely spam” badges on suspicious complaints |
-| **🛡️ Super Admin** | View all complaints · Filter by category · Full complaint detail · Manage department users · Change/reset passwords · See department reports with live red-badge counter · Take action on reports (delete spam/irrelevant/resolved complaints or clear report) · View compact history of deleted complaints with final status and reason |
-| **🎨 UI** | Dark/light theme · Snowfall background · Print-optimized (white background, no clutter) · Responsive · Slate/sky themed design |
+### 👨‍🎓 Public (Students)
+
+- Submit complaints without login
+- Upload up to 3 images
+- Provide phone (required) and email (optional)
+- Basic spam detection on suspicious text
+- Track status using a 6-digit tracking ID
+- Dedicated tracking page with A4 landscape print-ready layout
+
+### 🏢 Department
+
+- Category-based access
+- Update status (pending → in progress → resolved/rejected)
+- View attachments and location details
+- See student contact details
+- Secure department-only login
+- Flag complaints for admin review
+- “Possibly/likely spam” badges on suspicious complaints
+
+### 🛡️ Super Admin
+
+- View all complaints and filter by category
+- Full complaint detail view
+- Manage department users
+- Change/reset passwords
+- Department reports with a live red-badge counter
+- Take action on reports (delete spam/irrelevant/resolved complaints or clear report)
+- Compact history of deleted complaints with final status and reason
+
+### 🎨 UI & Printing
+
+- Dark/light theme
+- Snowfall background
+- Responsive UI (slate/sky themed)
+- Print-optimized output (white background, minimal clutter)
 
 ---
 
@@ -246,6 +277,8 @@ hostel-complaint-system/
 
 Students do not have accounts; complaints are submitted publicly.
 
+Super admin password can also be reset from the frontend route: `/reset-admin-password`.
+
 ---
 
 ## 🧰 Makefile commands
@@ -281,6 +314,8 @@ Students do not have accounts; complaints are submitted publicly.
 - Images included in print
 - Buttons and theme toggle hidden in PDF
 - Resolved status indicator
+
+Tip: try printing from the browser using the “Print/PDF” controls on the tracking page.
 
 ---
 
