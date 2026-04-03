@@ -11,7 +11,11 @@
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 
-*JWT · bcrypt · Multer · React Router · Axios*
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+[![bcrypt](https://img.shields.io/badge/bcrypt-394D3B?style=for-the-badge)](https://github.com/kelektiv/node.bcrypt.js)
+[![Multer](https://img.shields.io/badge/Multer-000000?style=for-the-badge)](https://github.com/expressjs/multer)
+[![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)](https://reactrouter.com)
+[![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com)
 
 </div>
 
