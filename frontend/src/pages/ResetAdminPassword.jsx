@@ -9,7 +9,6 @@ const JUIT_LOGO_SRC = '/juit-logo.png';
 const ResetAdminPassword = () => {
   const { isDark } = useTheme();
   const [resetKey, setResetKey] = useState('');
-  const [totpCode, setTotpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -60,10 +59,7 @@ const ResetAdminPassword = () => {
       setConfirmPassword('');
       setResetKey('');
     } catch (err) {
-      setError(
-        err.response?.data?.error ||
-          'Failed to reset password. Please check the TOTP code or reset key.'
-      );
+      setError(err.response?.data?.error || 'Failed to reset password. Please check the reset key.');
       setSuccess('');
     } finally {
       setLoading(false);

@@ -187,7 +187,8 @@ hostel-complaint-system/
 │   │   ├── migrate-v6.js    # rejected status support
 │   │   ├── migrate-v7.js    # contact_phone and contact_email on complaints
 │   │   ├── migrate-v8.js    # complaint_reports table (department → admin flags)
-│   │   └── migrate-v9.js    # complaint_history table (compact audit of deletions)
+│   │   ├── migrate-v9.js    # complaint_history table (compact audit of deletions)
+│   │   └── migrate-v10.js   # additional schema tweaks (if any)
 │   ├── routes/
 │   │   ├── auth.js          # login + super admin tools
 │   │   ├── categories.js    # category listing
@@ -204,6 +205,8 @@ hostel-complaint-system/
     ├── vite.config.js
     ├── tailwind.config.js
     ├── postcss.config.js
+    ├── vercel.json          # optional: SPA rewrite config if deploying frontend to Vercel
+    ├── .env.example         # example for VITE_API_URL when deploying
     ├── public/
     │   └── juit-logo.png
     └── src/
@@ -226,7 +229,7 @@ hostel-complaint-system/
         │   ├── ComplaintDetail.jsx
         │   ├── Login.jsx
         │   ├── AdminDashboard.jsx
-        │   └── StudentDashboard.jsx
+        │   └── ResetAdminPassword.jsx
         └── utils/
             ├── api.js
             └── auth.js

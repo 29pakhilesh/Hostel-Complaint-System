@@ -11,7 +11,6 @@ const Login = () => {
   const { isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [totp, setTotp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
@@ -31,18 +30,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (!totp.trim()) {
-      setError('Enter the 6-digit TOTP code from your authenticator app.');
-      triggerShake();
-      triggerFlash();
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { email, password, totp_code: totp.trim() });
+      const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
 
       if (user.role !== 'super_admin') {
@@ -123,24 +114,6 @@ const Login = () => {
                 required
                 className={`w-full px-4 py-3 rounded-xl border ${inputBgClass} ${inputFocusClass}`}
                 placeholder="Enter your password"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="totp" className={`block text-sm font-semibold mb-2 ${textMainClass}`}>
-                TOTP code
-              </label>
-              <input
-                id="totp"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                value={totp}
-                onChange={(e) => setTotp(e.target.value)}
-                required
-                className={`w-full px-4 py-3 rounded-xl border ${inputBgClass} ${inputFocusClass}`}
-                placeholder="6-digit code from authenticator"
               />
             </div>
 
