@@ -198,76 +198,38 @@ Backend runs in the background, frontend in the foreground. After exiting, stop 
 
 ```
 hostel-complaint-system/
-├── .gitignore
 ├── Makefile
 ├── README.md
-├── QUICKSTART.md
-├── FILES.md
+├── render.yaml              # Render blueprint (API + Postgres)
 │
 ├── backend/
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── package.json
-│   ├── server.js
-│   ├── config/
-│   │   └── database.js
-│   ├── middleware/
-│   │   └── auth.js
-│   ├── migrations/
-│   │   ├── migrate.js       # base schema, default super admin, categories
-│   │   ├── migrate-v2.js    # department role + per-category department users
-│   │   ├── migrate-v3.js    # hostel/block/room + image_paths on complaints
-│   │   ├── migrate-v4.js    # inprogress status
-│   │   ├── migrate-v5.js    # short tracking_code for public tracking
-│   │   ├── migrate-v6.js    # rejected status support
-│   │   ├── migrate-v7.js    # contact_phone and contact_email on complaints
-│   │   ├── migrate-v8.js    # complaint_reports table (department → admin flags)
-│   │   ├── migrate-v9.js    # complaint_history table (compact audit of deletions)
-│   │   └── migrate-v10.js   # additional schema tweaks (if any)
-│   ├── routes/
-│   │   ├── auth.js          # login + super admin tools
-│   │   ├── categories.js    # category listing
-│   │   ├── complaints.js    # public submit/track + department/admin views, reports, history, deletion
-│   │   └── translate.js     # English → Hindi helper for departments
-│   ├── scripts/
-│   │   └── create-user.js
-│   └── uploads/              # runtime: complaint images (deleted automatically when complaints are removed)
+│   ├── app/
+│   │   ├── server.js        # Express entry point
+│   │   ├── config/          # database.js
+│   │   ├── middleware/      # auth.js
+│   │   ├── routers/         # HTTP handlers (thin)
+│   │   ├── services/        # business logic
+│   │   ├── repositories/    # database access
+│   │   ├── adapters/        # file storage, external APIs
+│   │   ├── migrations/      # migrate.js … migrate-v10.js
+│   │   └── scripts/         # create-user.js
+│   ├── uploads/             # runtime complaint images
+│   └── package.json
 │
 └── frontend/
-    ├── .gitignore
-    ├── package.json
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    ├── postcss.config.js
-    ├── vercel.json          # optional: SPA rewrite config if deploying frontend to Vercel
-    ├── .env.example         # example for VITE_API_URL when deploying
-    ├── public/
-    │   └── juit-logo.png
+    ├── vercel.json
     └── src/
-        ├── main.jsx
-        ├── App.jsx
-        ├── index.css
-        ├── components/
-        │   ├── ProtectedRoute.jsx
-        │   ├── RoleBasedRoute.jsx
-        │   ├── SnowfallOverlay.jsx
-        │   └── ThemeToggle.jsx
-        ├── contexts/
-        │   └── ThemeContext.jsx
-        ├── pages/
-        │   ├── PublicComplaint.jsx
-        │   ├── TrackComplaint.jsx
-        │   ├── ComplaintConfirmation.jsx
-        │   ├── DepartmentLogin.jsx
-        │   ├── DepartmentDashboard.jsx
-        │   ├── ComplaintDetail.jsx
-        │   ├── Login.jsx
-        │   ├── AdminDashboard.jsx
-        │   └── ResetAdminPassword.jsx
-        └── utils/
-            ├── api.js
-            └── auth.js
+        ├── app/             # App.jsx, router.jsx
+        ├── features/
+        │   ├── complaints/pages/
+        │   ├── auth/pages/
+        │   ├── admin/pages/
+        │   └── department/pages/
+        └── shared/
+            ├── api/         # client.js, media.js
+            ├── components/
+            ├── contexts/
+            └── utils/
 ```
 
 ---
@@ -334,10 +296,20 @@ Output: `frontend/dist/`
 
 ---
 
+## 🌐 Deployment (Render + Vercel)
+
+1. **Render** — New → Blueprint → connect repo (`render.yaml` creates API + Postgres). After deploy, run `npm run migrate:all` in the API Shell.
+2. **Vercel** — Import repo, root directory `frontend`, set `VITE_API_URL=https://<api>.onrender.com/api`.
+3. **Render env** — Set `FRONTEND_URL=https://<your-app>.vercel.app` on the API service for CORS.
+
+Change default passwords after go-live. Render free tier sleeps when idle; uploads on server disk may not survive redeploys.
+
+---
+
 ## 📚 Other docs
 
-- **[QUICKSTART.md](QUICKSTART.md)** — Short step-by-step setup guide
-- **[FILES.md](FILES.md)** — Project files manifest and descriptions
+- **[QUICKSTART.md](QUICKSTART.md)** — Short setup guide
+- **[FILES.md](FILES.md)** — File manifest
 
 ---
 
