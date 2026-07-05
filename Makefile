@@ -24,7 +24,7 @@ frontend-install:
 	cd frontend && npm install
 
 migrate-db:
-	cd backend && npm run migrate && npm run migrate-v2 && npm run migrate-v3 && npm run migrate-v4 && npm run migrate-v5 && npm run migrate-v6 && npm run migrate-v7 && npm run migrate-v8 && npm run migrate-v9 && npm run migrate-v10
+	cd backend && npm run migrate:all
 
 backend:
 	cd backend && npm start

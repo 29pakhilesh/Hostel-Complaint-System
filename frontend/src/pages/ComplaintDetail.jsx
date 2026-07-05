@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../utils/api';
+import { resolveUploadUrl } from '../utils/media';
 import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
 import { getUser } from '../utils/auth';
@@ -107,7 +108,7 @@ const ComplaintDetail = () => {
     );
   };
 
-  const images = Array.isArray(complaint?.image_paths) ? complaint.image_paths : [];
+  const images = (Array.isArray(complaint?.image_paths) ? complaint.image_paths : []).map(resolveUploadUrl);
 
   const handleTranslate = async () => {
     if (!complaint?.description || translating) return;

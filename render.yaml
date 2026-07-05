@@ -1,0 +1,36 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+#
+# Deploy: Render Dashboard → New → Blueprint → connect this repo.
+# After deploy, open the web service Shell and run: npm run migrate:all
+# Then set FRONTEND_URL to your Vercel URL (e.g. https://your-app.vercel.app).
+
+databases:
+  - name: hostel-complaints-db
+    plan: free
+    databaseName: hostel_complaints
+    user: hostel_complaints
+
+services:
+  - type: web
+    name: hostel-complaint-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hostel-complaints-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: SUPER_ADMIN_RESET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false

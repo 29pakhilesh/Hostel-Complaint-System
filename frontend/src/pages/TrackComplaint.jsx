@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import SnowfallOverlay from '../components/SnowfallOverlay';
 import api from '../utils/api';
+import { resolveUploadUrl } from '../utils/media';
 import { Link, useSearchParams } from 'react-router-dom';
 
 const TrackComplaint = () => {
@@ -78,7 +79,7 @@ const TrackComplaint = () => {
     return 'border-slate-700 text-slate-500';
   };
 
-  const images = Array.isArray(complaint?.image_paths) ? complaint.image_paths : [];
+  const images = (Array.isArray(complaint?.image_paths) ? complaint.image_paths : []).map(resolveUploadUrl);
 
   const handlePrint = () => {
     window.print();
