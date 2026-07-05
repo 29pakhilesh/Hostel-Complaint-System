@@ -1,6 +1,36 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+let resolvedApiOrigin = '';
+
+function setResolvedApiOrigin(url) {
+  if (!url) return;
+
+  try {
+    resolvedApiOrigin = new URL(url).origin;
+  } catch {
+    // ignore invalid URLs
+  }
+}
+
+function originFromApiBaseUrl(baseUrl) {
+  if (!baseUrl || !/^https?:\/\//i.test(baseUrl)) {
+    return '';
+  }
+
+  try {
+    return new URL(baseUrl).origin;
+  } catch {
+    return '';
+  }
+}
+
+setResolvedApiOrigin(originFromApiBaseUrl(API_BASE_URL));
+
+export function getApiOrigin() {
+  return originFromApiBaseUrl(API_BASE_URL) || resolvedApiOrigin;
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,7 +55,10 @@ api.interceptors.request.use(
 
 // Handle 401 errors (unauthorized) - only redirect if user is authenticated
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    setResolvedApiOrigin(response.request?.responseURL);
+    return response;
+  },
   (error) => {
     // Only redirect on auth errors if user was previously authenticated
     // Don't redirect for public routes (like /api/categories or /api/complaints POST)
