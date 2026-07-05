@@ -4,7 +4,9 @@
 
 **A secure, role-based grievance redressal system for hostels with public submission, department dashboards, and print-ready tracking.**
 
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+> **Portfolio / demo project** — built for learning and GitHub showcase. The live demo is **not** intended for real institutional production use. Do not submit real personal data.
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://hostel-complaint-system-opal.vercel.app/)
 [![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev)
@@ -23,6 +25,7 @@
 
 ## 📑 Table of contents
 
+- [Live demo](#-live-demo)
 - [Demo & overview](#-demo--overview)
 - [About](#-about)
 - [Features](#-features)
@@ -36,8 +39,25 @@
 - [Security](#-security)
 - [Print & tracking](#-print--tracking)
 - [Production build](#-production-build)
-- [Other docs](#-other-docs)
+- [Optional demo hosting](#-optional-demo-hosting)
 - [License](#-license)
+
+---
+
+## 🌐 Live demo
+
+Try the hosted demo (free-tier — API may sleep after idle; first load can take ~30s):
+
+**https://hostel-complaint-system-opal.vercel.app**
+
+| Page | Path |
+|------|------|
+| Submit complaint | `/` |
+| Track complaint | `/track` |
+| Department login | `/login/department` |
+| Admin login | `/login/admin` |
+
+Demo logins are listed under [Default credentials](#-default-credentials). Use fake/test data only.
 
 ---
 
@@ -45,7 +65,7 @@
 
 Watch a full walkthrough of the system: public complaint submission, tracking, department dashboard, super admin panel, and print/PDF flow.
 
-Built for real use: students submit complaints publicly, departments resolve by category, and a super admin oversees reports and audit history.
+Academic portfolio project demonstrating a full-stack hostel grievance workflow.
 
 <div align="center">
 
@@ -61,7 +81,9 @@ Built for real use: students submit complaints publicly, departments resolve by 
 
 ## 📖 About
 
-This project is a **Hostel Grievance Redressal System** for institutions (e.g. JUIT). Students submit complaints publicly with optional images; departments log in to manage and resolve complaints by category; a super admin oversees all complaints and user management. Complaints are tracked via a unique ID with a print-friendly status page.
+This project is a **Hostel Grievance Redressal System** — a portfolio/demo app inspired by institutional hostel workflows (e.g. JUIT). Students submit complaints publicly with optional images; departments manage complaints by category; a super admin oversees reports and audit history. Complaints are tracked via a unique ID with a print-friendly status page.
+
+**Not production-ready:** no SLA, demo credentials, ephemeral file storage on free hosting, and data may be reset.
 
 ---
 
@@ -190,7 +212,7 @@ Backend runs in the background, frontend in the foreground. After exiting, stop 
 | Service | URL |
 |---------|-----|
 | Backend | http://localhost:5002 |
-| Frontend | http://localhost:5173 |
+| Frontend | http://localhost:3000 |
 
 ---
 
@@ -235,6 +257,8 @@ hostel-complaint-system/
 ---
 
 ## 🔐 Default credentials
+
+**Demo / local development only** — change these if you self-host.
 
 | Role | Email | Password |
 |------|--------|----------|
@@ -296,13 +320,11 @@ Output: `frontend/dist/`
 
 ---
 
-## 🌐 Deployment (Render + Vercel)
+## 🌐 Optional demo hosting
 
-1. **Render** — New → Blueprint → connect repo (`render.yaml` creates API + Postgres). After deploy, run `npm run migrate:all` in the API Shell.
-2. **Vercel** — Import repo, root directory `frontend`, set `VITE_API_URL=https://<api>.onrender.com/api`.
-3. **Render env** — Set `FRONTEND_URL=https://<your-app>.vercel.app` on the API service for CORS.
+`render.yaml` and `vercel.json` are included if you want a **personal demo** on Render + Vercel — same setup used for the live link above. This is for portfolio showcase, not production deployment.
 
-Change default passwords after go-live. Render free tier sleeps when idle; uploads on server disk may not survive redeploys.
+See [QUICKSTART.md](QUICKSTART.md) for local setup. For hosting: connect the repo on Render (Blueprint), run migrations against the external DB URL, deploy `frontend/` on Vercel with `VITE_API_URL`, then set `FRONTEND_URL` on Render for CORS.
 
 ---
 
